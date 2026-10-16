@@ -29,7 +29,23 @@ All four catalog cases loaded successfully in Chromium after their SHA-256 check
 
 Switching from a real case to the first user file cleared the opposite example snapshot, provenance and stale project name, with export disabled. Both 390 × 844 and 1280 × 900 viewport checks had no horizontal document overflow. The 43-root Axios case had a 445-pixel scroll region instead of expanding every root down the page. No warning/error console messages were recorded in the exercised flows.
 
-The new workbench screenshot uses the real Axios tree refresh and its `@commitlint/cli` group, not synthetic metrics. Release and remote CI results are added here after verification.
+The new workbench screenshot uses the real Axios tree refresh and its `@commitlint/cli` group, not synthetic metrics.
+
+## Verified public deployment and release
+
+The published [v0.2.0 tag](https://github.com/qsxustc/lockray/releases/tag/v0.2.0) points to commit [`3f459771f446c89178220cafd3b93722fb8c0fa9`](https://github.com/qsxustc/lockray/commit/3f459771f446c89178220cafd3b93722fb8c0fa9). The tagged source passed all 48 tests and the static build on both Node.js **22** and **24** in [GitHub CI](https://github.com/qsxustc/lockray/actions/runs/38938022305). The [Pages build and deployment](https://github.com/qsxustc/lockray/actions/runs/38938022346) and [release workflow](https://github.com/qsxustc/lockray/actions/runs/38938022482) completed successfully.
+
+The actual [public workbench](https://qsxustc.github.io/lockray/) was opened in Chromium after deployment. Its footer displayed v0.2.0, the real-case picker contained all four pinned examples, the Axios tree case returned 187 changes (29 added, 37 removed, 116 version changes, 5 metadata changes), and Marked returned 24 changes, zero review signals and the explicit nine-entry bundled-integrity coverage note. Both cases displayed the expected immutable source commit links. This is a deployed-flow check, not an exhaustive replay of every local browser test.
+
+All three release assets were present. GitHub's published archive digests matched archives independently generated locally from the exact release tag; both local ZIPs also passed `unzip -t`:
+
+| Asset | Published SHA-256 |
+| --- | --- |
+| [lockray-0.2.0-source.zip](https://github.com/qsxustc/lockray/releases/download/v0.2.0/lockray-0.2.0-source.zip) | `8855daf755f895d52b16e014580919300b628f517589cc4b13c1286595d13a55` |
+| [lockray-0.2.0-site.zip](https://github.com/qsxustc/lockray/releases/download/v0.2.0/lockray-0.2.0-site.zip) | `1bc97c464bfd307d52df20b870d934a2924f84e6ad6228b96254be6253d0eea5` |
+| [SHA256SUMS.txt](https://github.com/qsxustc/lockray/releases/download/v0.2.0/SHA256SUMS.txt) | Contains the two archive digests above |
+
+The release description's documentation links were corrected to absolute GitHub URLs and checked on the published page. This evidence record is a documentation-only follow-up to the immutable tag; it does not replace the tagged archives. The project has not been published to npm.
 
 ---
 

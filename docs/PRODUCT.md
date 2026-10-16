@@ -16,7 +16,7 @@ Many tools already summarize lockfile versions or produce review signals. [LockS
 
 This is a differentiation hypothesis, not a claim that nobody else implements dependency paths. User feedback should decide whether the combination saves meaningful review time.
 
-## Current v0.2 source scope
+## Released v0.2.0 scope
 
 - npm `package-lock.json` v2/v3 with explicit format validation.
 - Comparison by installed location, preserving nested copies.
@@ -55,7 +55,7 @@ A concise introduction:
 7. Tag `v0.2.0`, publish tested archives with checksums, and verify download links before replacing the existing stable-download entry. Do not claim an npm release unless it has actually been published and tested.
 8. Publish an honest launch description using the included fixture and model boundaries. Share only where community rules permit; do not send unsolicited messages.
 
-The repository and [public demo](https://qsxustc.github.io/lockray/) are established, and the [v0.1.0 release](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) remains the published download. The current v0.2 source adds the changes described above; its release assets have not yet been published. Verified deployment, CI, and release evidence belongs in [VALIDATION.md](VALIDATION.md). The project has not been published to npm.
+The repository, [public demo](https://qsxustc.github.io/lockray/), and [v0.2.0 release](https://github.com/qsxustc/lockray/releases/tag/v0.2.0) are published with the real-case picker and fixes above. Node.js 22/24 CI, deployed browser checks, release assets and SHA-256 digests are verified in [VALIDATION.md](VALIDATION.md). The project has not been published to npm.
 
 ## Validate usefulness before expanding scope
 
