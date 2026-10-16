@@ -310,7 +310,7 @@ test("rejects invalid JSON, formats, paths, types, and oversized inputs", () => 
   assert.throws(() => parseLock('{"lockfileVersion":1}'), /versions 2 and 3/);
   assert.throws(() => parseLock('{"lockfileVersion":3}'), /packages object/);
   assert.throws(
-    () => parseLock(lock({ "../node_modules/a": pkg("1") })),
+    () => parseLock(lock({ "node_modules/a/../bad": pkg("1") })),
     /invalid package path/,
   );
   assert.throws(
@@ -439,4 +439,315 @@ test("bounds duplicated chain output for long graphs while preserving changes an
     ) <= LIMITS.chainSegments,
   );
   assert.match(toMarkdown(report), /Chain omitted to keep report size bounded/);
+});
+
+test("new bundled packages without individual integrity produce coverage notes, not missing-integrity signals", () => {
+  const report = analyze(
+    lock(),
+    lock({ [path("bundled")]: { version: "1.0.0", inBundle: true } }),
+  );
+  assert.equal(report.summary.added, 1);
+  assert.equal(report.summary.signals, 0);
+  assert.ok(
+    report.warnings.some((warning) =>
+      warning.includes(
+        "1 changed bundled package slot has no individual integrity value",
+      ),
+    ),
+  );
+  assert.ok(
+    report.warnings.some((warning) =>
+      warning.includes("parent package checksums were not verified"),
+    ),
+  );
+});
+
+test("bundled upgrades with no integrity in either snapshot do not create missing-integrity noise", () => {
+  const report = analyze(
+    lock({ [path("bundled")]: { version: "1.0.0", inBundle: true } }),
+    lock({ [path("bundled")]: { version: "1.1.0", inBundle: true } }),
+  );
+  assert.equal(report.summary.updated, 1);
+  assert.equal(report.summary.signals, 0);
+  assert.ok(
+    report.warnings.some((warning) =>
+      warning.includes("1 changed bundled package slot"),
+    ),
+  );
+});
+
+test("ordinary packages without integrity still receive missing-integrity signals", () => {
+  const report = analyze(
+    lock({ [path("ordinary")]: { version: "1.0.0" } }),
+    lock({
+      [path("ordinary")]: { version: "1.1.0" },
+      [path("new")]: { version: "1.0.0" },
+    }),
+  );
+  assert.equal(report.summary.signals, 2);
+  assert.ok(
+    report.changes.every((change) =>
+      change.signals.some((signal) => signal.code === "integrity-missing"),
+    ),
+  );
+  assert.ok(
+    !report.warnings.some((warning) =>
+      warning.includes("Integrity-missing signals were omitted"),
+    ),
+  );
+});
+
+test("removing a previously recorded integrity value remains a signal when a package becomes bundled", () => {
+  const report = analyze(
+    lock({
+      [path("bundled")]: { version: "1.0.0", integrity: "sha512-original" },
+    }),
+    lock({ [path("bundled")]: { version: "1.0.0", inBundle: true } }),
+  );
+  assert.equal(report.summary.signals, 1);
+  assert.deepEqual(
+    report.changes[0].signals.map((signal) => signal.code),
+    ["integrity-missing"],
+  );
+  assert.ok(
+    !report.warnings.some((warning) =>
+      warning.includes("Integrity-missing signals were omitted"),
+    ),
+  );
+});
+
+test("bundled missing-integrity suppression preserves lifecycle and source-change signals", () => {
+  const report = analyze(
+    lock({
+      [path("bundled")]: {
+        version: "1.0.0",
+        inBundle: true,
+        resolved: "https://registry.npmjs.org/bundled.tgz",
+      },
+    }),
+    lock({
+      [path("bundled")]: {
+        version: "1.1.0",
+        inBundle: true,
+        resolved: "http://mirror.example/bundled.tgz",
+        hasInstallScript: true,
+      },
+    }),
+  );
+  assert.deepEqual(
+    report.changes[0].signals.map((signal) => signal.code),
+    ["install-script-added", "source-host-changed", "source-protocol-changed"],
+  );
+  assert.equal(report.summary.signalCount, 3);
+  assert.ok(
+    report.warnings.some((warning) =>
+      warning.includes("1 changed bundled package slot"),
+    ),
+  );
+});
+
+test("overlapping root production and development declarations use npm's effective development range", () => {
+  const packages = { [path("foo")]: pkg("2.0.0", { dev: true }) };
+  const report = analyze(
+    lock(packages, {
+      dependencies: { foo: "file:../foo1" },
+      devDependencies: { foo: "file:../foo2" },
+    }),
+    lock(packages, {
+      dependencies: { foo: "file:../foo1" },
+      devDependencies: { foo: "file:../foo3" },
+    }),
+  );
+  assert.equal(report.summary.changed, 0);
+  assert.equal(report.rootChanges.length, 1);
+  assert.equal(report.rootChanges[0].before.kind, "development");
+  assert.equal(report.rootChanges[0].before.range, "file:../foo2");
+  assert.equal(report.rootChanges[0].after.range, "file:../foo3");
+  assert.deepEqual(report.roots[0].afterDeclarations, [
+    { kind: "production", range: "file:../foo1" },
+    { kind: "development", range: "file:../foo3" },
+  ]);
+});
+
+test("changes to an overridden root declaration remain visible even when the effective declaration is identical", () => {
+  const packages = { [path("foo")]: pkg("2.0.0") };
+  const report = analyze(
+    lock(packages, {
+      dependencies: { foo: "^1.0.0" },
+      devDependencies: { foo: "^2.0.0" },
+    }),
+    lock(packages, {
+      dependencies: { foo: "~1.0.0" },
+      devDependencies: { foo: "^2.0.0" },
+    }),
+  );
+  assert.equal(report.summary.changed, 0);
+  assert.equal(report.rootChanges.length, 1);
+  assert.equal(report.roots[0].beforeRange, "^2.0.0");
+  assert.equal(report.roots[0].afterRange, "^2.0.0");
+  assert.equal(report.roots[0].declarationChange, "updated");
+  const markdown = toMarkdown(report);
+  assert.ok(markdown.includes("^1.0.0 (production)"));
+  assert.ok(markdown.includes("~1.0.0 (production)"));
+  assert.ok(markdown.includes("^2.0.0 (development; effective)"));
+});
+
+test("root precedence follows development, optional, production, then peer without losing declarations", () => {
+  const root = {
+    peerDependencies: { foo: "peer-range" },
+    dependencies: { foo: "prod-range" },
+    optionalDependencies: { foo: "optional-range" },
+    devDependencies: { foo: "dev-range" },
+  };
+  const packages = { [path("foo")]: pkg("1.0.0") };
+  const all = parseLock(lock(packages, root)).roots;
+  assert.equal(all.length, 1);
+  assert.equal(all[0].kind, "development");
+  assert.equal(all[0].range, "dev-range");
+  assert.deepEqual(
+    all[0].declarations.map((item) => item.kind),
+    ["peer", "production", "optional", "development"],
+  );
+  delete root.devDependencies;
+  assert.equal(parseLock(lock(packages, root)).roots[0].kind, "optional");
+  delete root.optionalDependencies;
+  assert.equal(parseLock(lock(packages, root)).roots[0].kind, "production");
+  delete root.dependencies;
+  assert.equal(parseLock(lock(packages, root)).roots[0].kind, "peer");
+});
+
+test("duplicate root declarations produce one root owner and one impact count", () => {
+  const root = {
+    dependencies: { foo: "*" },
+    optionalDependencies: { foo: "*" },
+    devDependencies: { foo: "*" },
+    peerDependencies: { foo: "*" },
+  };
+  const report = analyze(
+    lock(
+      {
+        [path("foo")]: pkg("1.0.0", { dependencies: { child: "*" } }),
+        [path("child")]: pkg("1.0.0"),
+      },
+      root,
+    ),
+    lock(
+      {
+        [path("foo")]: pkg("1.0.0", { dependencies: { child: "*" } }),
+        [path("child")]: pkg("1.0.1"),
+      },
+      root,
+    ),
+  );
+  assert.equal(report.roots.length, 1);
+  assert.deepEqual(report.changes[0].roots, ["foo"]);
+  assert.equal(report.roots[0].changed, 1);
+  assert.equal(report.roots[0].updated, 1);
+});
+
+test("npm sibling file targets with ../ and ../../ prefixes remain opaque while installed links are compared as leaves", () => {
+  const before = lock(
+    {
+      "../foo1": { name: "foo", version: "1.0.0", dependencies: { bar: "*" } },
+      "../foo1/node_modules/bar": { version: "1.0.0" },
+      [path("foo")]: { resolved: "../foo1", link: true },
+    },
+    { dependencies: { foo: "file:../foo1" } },
+  );
+  const after = lock(
+    {
+      "../../foo2": {
+        name: "foo",
+        version: "2.0.0",
+        dependencies: { bar: "*" },
+      },
+      "../../foo2/node_modules/bar": { version: "2.0.0" },
+      [path("foo")]: { resolved: "../../foo2", link: true },
+    },
+    { dependencies: { foo: "file:../../foo2" } },
+  );
+  const report = analyze(before, after);
+  assert.equal(report.summary.before, 1);
+  assert.equal(report.summary.after, 1);
+  assert.equal(report.summary.metadata, 1);
+  assert.equal(report.summary.signals, 0);
+  assert.equal(report.changes[0].path, path("foo"));
+  assert.deepEqual(
+    report.changes[0].afterChain.map((item) => item.path),
+    [path("foo")],
+  );
+  assert.ok(
+    report.warnings.some((warning) =>
+      warning.includes("2 non-installed target entries and 1 installed links"),
+    ),
+  );
+  assert.ok(!report.warnings.some((warning) => warning.includes("→ bar")));
+});
+
+test("changing only opaque sibling target metadata does not invent installed package changes", () => {
+  const root = { dependencies: { foo: "file:../foo" } };
+  const before = lock(
+    {
+      "../foo": { name: "foo", version: "1.0.0" },
+      [path("foo")]: { resolved: "../foo", link: true },
+    },
+    root,
+  );
+  const after = lock(
+    {
+      "../foo": { name: "foo", version: "2.0.0" },
+      [path("foo")]: { resolved: "../foo", link: true },
+    },
+    root,
+  );
+  const report = analyze(before, after);
+  assert.equal(report.summary.changed, 0);
+  assert.ok(
+    report.warnings.some((warning) =>
+      warning.includes("target contents and dependencies are not expanded"),
+    ),
+  );
+});
+
+test("absolute target descriptors and their node_modules paths do not become project slots", () => {
+  const parsed = parseLock(
+    lock(
+      {
+        "/tmp/foo": { version: "1.0.0" },
+        "/tmp/foo/node_modules/child": { version: "1.0.0" },
+        "C:/tmp/foo/node_modules/child": { version: "1.0.0" },
+        [path("foo")]: { link: true, resolved: "/tmp/foo" },
+      },
+      { dependencies: { foo: "file:/tmp/foo" } },
+    ),
+  );
+  assert.deepEqual(Object.keys(parsed.packages), [path("foo")]);
+  assert.ok(
+    parsed.warnings.some((warning) =>
+      warning.includes("3 non-installed target entries"),
+    ),
+  );
+});
+
+test("opaque external targets still require object descriptors and internal installation paths stay strict", () => {
+  for (const key of [
+    "../foo",
+    "../../foo/node_modules/bar",
+    "/tmp/foo",
+    "C:/tmp/foo",
+  ])
+    for (const entry of [null, [], "not-an-object"])
+      assert.throws(
+        () => parseLock(lock({ [key]: entry })),
+        /must be an object/,
+      );
+  for (const key of [
+    "node_modules/foo/../bar",
+    "node_modules/foo/node_modules/../../bar",
+    "node_modules/foo\\node_modules\\bar",
+  ])
+    assert.throws(
+      () => parseLock(lock({ [key]: pkg("1.0.0") })),
+      /invalid package path/,
+    );
 });

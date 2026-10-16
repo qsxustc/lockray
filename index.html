@@ -141,6 +141,20 @@
           </button>
         </div>
       </div>
+      <div class="example-picker">
+        <label for="real-example" data-i18n="realExamples"
+          >Real upgrade cases</label
+        >
+        <select id="real-example" disabled>
+          <option value="" data-i18n="chooseExample">
+            Choose a public project…
+          </option>
+        </select>
+        <span data-i18n="examplePrivacy"
+          >Pinned public snapshots. Loaded only when selected.</span
+        >
+      </div>
+      <p id="case-provenance" class="case-provenance hidden"></p>
       <p
         class="notice hidden"
         id="message"
@@ -369,7 +383,10 @@
       <span class="footer-brand">lockray.</span
       ><span data-i18n="footer"
         >Open source. On your device. In your corner.</span
-      ><span>v0.1.0 <span class="footer-divider">·</span> MIT</span>
+      ><span
+        ><span id="app-version">v0.2.0</span>
+        <span class="footer-divider">·</span> MIT</span
+      >
     </footer>
 
     <dialog id="paste-dialog">

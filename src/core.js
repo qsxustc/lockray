@@ -14,6 +14,12 @@ const record = (value) =>
 const compare = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const textValue = (value) => (typeof value === "string" ? value : "");
 const installed = (path) => /(?:^|\/)node_modules\//.test(path);
+const outsideTarget = (path) =>
+  path === ".." ||
+  path.startsWith("../") ||
+  path.startsWith("/") ||
+  path.startsWith("\\") ||
+  /^[A-Za-z]:[\\/]/.test(path);
 const packageName = (path) =>
   /(?:^|\/)node_modules\/((?:@[^/]+\/)?[^/]+)$/.exec(path)?.[1] || "";
 const dependencyName = (name) =>
@@ -69,6 +75,15 @@ export function parseLock(text, { label = "Lockfile" } = {}) {
   let edgeCount = 0;
   for (const [path, entry] of entries) {
     if (path === "") continue;
+    if (!record(entry))
+      fail(label, `package entry ${JSON.stringify(path)} must be an object.`);
+    // npm records sibling file/link targets as ../foo and may include their own
+    // node_modules entries. These are opaque metadata, never project slots or
+    // paths to read from the filesystem.
+    if (outsideTarget(path) || !installed(path)) {
+      workspaceTargets++;
+      continue;
+    }
     if (
       !path ||
       path.length > 4096 ||
@@ -80,12 +95,6 @@ export function parseLock(text, { label = "Lockfile" } = {}) {
         label,
         `invalid package path ${JSON.stringify(path.slice(0, 100))}.`,
       );
-    if (!record(entry))
-      fail(label, `package entry ${JSON.stringify(path)} must be an object.`);
-    if (!installed(path)) {
-      workspaceTargets++;
-      continue;
-    }
     const slotName = packageName(path);
     if (!dependencyName(slotName))
       fail(label, `invalid installation slot ${JSON.stringify(path)}.`);
@@ -149,17 +158,19 @@ export function parseLock(text, { label = "Lockfile" } = {}) {
     );
   const rootSpecs = new Map();
   for (const [field, kind] of [
-    ["dependencies", "production"],
-    ["devDependencies", "development"],
     ["peerDependencies", "peer"],
+    ["dependencies", "production"],
     ["optionalDependencies", "optional"],
+    ["devDependencies", "development"],
   ]) {
     for (const [name, range] of Object.entries(
       dependencyMap(root, field, label),
     )) {
-      // optionalDependencies override dependencies; production wins over a duplicate dev declaration.
-      if (!rootSpecs.has(name) || kind === "optional")
-        rootSpecs.set(name, { name, range, kind });
+      // npm Arborist loads root peers, production, optional, then development.
+      // Later declarations replace an edge while every original field is retained.
+      const declarations = rootSpecs.get(name)?.declarations || [];
+      declarations.push({ kind, range });
+      rootSpecs.set(name, { name, range, kind, declarations });
     }
   }
   const roots = [...rootSpecs.values()]
@@ -397,7 +408,7 @@ function reviewSignals(before, after) {
         "The recorded version is unchanged but the integrity value differs. Verify why the artifact changed.",
       );
   }
-  if (!after.integrity && !after.link)
+  if (!after.integrity && !after.link && (!after.inBundle || before?.integrity))
     add(
       "integrity-missing",
       "Integrity not recorded",
@@ -460,7 +471,8 @@ export function compareLocks(before, after) {
       !oldRoot ||
       !newRoot ||
       oldRoot.range !== newRoot.range ||
-      oldRoot.kind !== newRoot.kind
+      oldRoot.kind !== newRoot.kind ||
+      stable(oldRoot.declarations) !== stable(newRoot.declarations)
     ) {
       rootChanges.push({
         name,
@@ -474,6 +486,8 @@ export function compareLocks(before, after) {
     row.afterRange = newRoot?.range ?? null;
     row.beforeKind = oldRoot?.kind ?? null;
     row.afterKind = newRoot?.kind ?? null;
+    row.beforeDeclarations = oldRoot?.declarations ?? [];
+    row.afterDeclarations = newRoot?.declarations ?? [];
     row.declarationChange =
       rootChanges.at(-1)?.name === name ? rootChanges.at(-1).status : null;
   }
@@ -481,6 +495,7 @@ export function compareLocks(before, after) {
     [...before.roots, ...after.roots].map((root) => root.path).filter(Boolean),
   );
   const changes = [];
+  let bundledIntegritySkipped = 0;
   for (const path of paths) {
     const oldPackage = before.packages[path] || null;
     const newPackage = after.packages[path] || null;
@@ -494,6 +509,13 @@ export function compareLocks(before, after) {
       status =
         oldPackage.version !== newPackage.version ? "updated" : "metadata";
     const signals = reviewSignals(oldPackage, newPackage);
+    if (
+      newPackage?.inBundle &&
+      !newPackage.integrity &&
+      !newPackage.link &&
+      !oldPackage?.integrity
+    )
+      bundledIntegritySkipped++;
     const roots = [
       ...new Set([
         ...(oldGraph.owners.get(path) || []),
@@ -545,6 +567,10 @@ export function compareLocks(before, after) {
   if (stable(before.rootMetadata) !== stable(after.rootMetadata))
     warnings.push(
       "Root package metadata changed. Summary counts describe installed dependency slots only.",
+    );
+  if (bundledIntegritySkipped)
+    warnings.push(
+      `${bundledIntegritySkipped} changed bundled package slot${bundledIntegritySkipped === 1 ? " has" : "s have"} no individual integrity value. Integrity-missing signals were omitted for these entries; package contents and parent package checksums were not verified.`,
     );
   if (rootChanges.length)
     warnings.push(
@@ -643,8 +669,17 @@ export function toMarkdown(report) {
       "| --- | --- | --- | --- |",
     );
     for (const root of report.rootChanges) {
-      const declaration = (item) =>
-        item ? `${markdown(item.range)} (${markdown(item.kind)})` : "—";
+      const declaration = (item) => {
+        if (!item) return "—";
+        if (!item.declarations || item.declarations.length < 2)
+          return `${markdown(item.range)} (${markdown(item.kind)})`;
+        return item.declarations
+          .map(
+            (entry) =>
+              `${markdown(entry.range)} (${markdown(entry.kind)}${entry.kind === item.kind ? "; effective" : ""})`,
+          )
+          .join("<br>");
+      };
       lines.push(
         `| ${markdown(root.name)} | ${markdown(root.status)} | ${declaration(root.before)} | ${declaration(root.after)} |`,
       );

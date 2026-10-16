@@ -1,0 +1,110 @@
+{
+  "arboristVersion": "9.7.0",
+  "mode": "offline loadVirtual only; no upstream installation or execution",
+  "results": [
+    {
+      "id": "axios",
+      "attributionComplete": true,
+      "chainsComplete": true,
+      "before": {
+        "installed": 687,
+        "npmInventory": 687,
+        "resolvedRoots": 42,
+        "unreachable": [],
+        "rootRelationships": 1378,
+        "resolutionDifferences": [],
+        "chainDifferences": [],
+        "outsideModel": []
+      },
+      "after": {
+        "installed": 687,
+        "npmInventory": 687,
+        "resolvedRoots": 42,
+        "unreachable": [],
+        "rootRelationships": 1378,
+        "resolutionDifferences": [],
+        "chainDifferences": [],
+        "outsideModel": []
+      },
+      "ownerDifferences": []
+    },
+    {
+      "id": "axios-tree",
+      "attributionComplete": true,
+      "chainsComplete": true,
+      "before": {
+        "installed": 715,
+        "npmInventory": 715,
+        "resolvedRoots": 43,
+        "unreachable": [],
+        "rootRelationships": 1402,
+        "resolutionDifferences": [],
+        "chainDifferences": [],
+        "outsideModel": []
+      },
+      "after": {
+        "installed": 707,
+        "npmInventory": 707,
+        "resolvedRoots": 43,
+        "unreachable": [],
+        "rootRelationships": 1397,
+        "resolutionDifferences": [],
+        "chainDifferences": [],
+        "outsideModel": []
+      },
+      "ownerDifferences": []
+    },
+    {
+      "id": "marked",
+      "attributionComplete": true,
+      "chainsComplete": true,
+      "before": {
+        "installed": 660,
+        "npmInventory": 660,
+        "resolvedRoots": 25,
+        "unreachable": [],
+        "rootRelationships": 2998,
+        "resolutionDifferences": [],
+        "chainDifferences": [],
+        "outsideModel": []
+      },
+      "after": {
+        "installed": 660,
+        "npmInventory": 660,
+        "resolvedRoots": 25,
+        "unreachable": [],
+        "rootRelationships": 2998,
+        "resolutionDifferences": [],
+        "chainDifferences": [],
+        "outsideModel": []
+      },
+      "ownerDifferences": []
+    },
+    {
+      "id": "pdfjs",
+      "attributionComplete": true,
+      "chainsComplete": true,
+      "before": {
+        "installed": 965,
+        "npmInventory": 965,
+        "resolvedRoots": 58,
+        "unreachable": [],
+        "rootRelationships": 2769,
+        "resolutionDifferences": [],
+        "chainDifferences": [],
+        "outsideModel": []
+      },
+      "after": {
+        "installed": 965,
+        "npmInventory": 965,
+        "resolvedRoots": 58,
+        "unreachable": [],
+        "rootRelationships": 2769,
+        "resolutionDifferences": [],
+        "chainDifferences": [],
+        "outsideModel": []
+      },
+      "ownerDifferences": []
+    }
+  ]
+}

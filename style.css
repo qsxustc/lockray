@@ -1873,3 +1873,73 @@ dialog p {
   margin-top: 5px;
   overflow-wrap: anywhere;
 }
+
+.example-picker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px 15px;
+  margin: -12px 0 22px;
+  color: #6f7b64;
+  font-size: 10px;
+}
+.example-picker label {
+  font-weight: 600;
+}
+.example-picker select {
+  max-width: 100%;
+  width: min(325px, 100%);
+  padding: 6px 9px;
+  border: 1px solid #d7ddd2;
+  border-radius: 5px;
+  background: #fff;
+  color: #526344;
+  font-size: 10px;
+}
+.example-picker > span {
+  color: #7a8570;
+}
+.case-provenance {
+  margin: -10px 0 22px;
+  font: 10px/1.8 var(--mono);
+  color: #6f7b64;
+  overflow-wrap: anywhere;
+}
+.case-provenance a {
+  color: #526c3f;
+}
+@media (max-width: 650px) {
+  .example-picker {
+    gap: 7px;
+    margin-top: -9px;
+  }
+  .example-picker label {
+    flex: 1 0 100%;
+  }
+  .example-picker select {
+    width: 100%;
+  }
+  .example-picker > span {
+    font-size: 9px;
+  }
+  .case-provenance {
+    font-size: 9px;
+  }
+}
+
+@media (min-width: 651px) {
+  .roots-panel #roots {
+    max-height: 445px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #d5ddcd transparent;
+  }
+}
+@media (min-width: 951px) {
+  .detail-panel {
+    max-height: 720px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #d5ddcd transparent;
+  }
+}

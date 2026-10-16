@@ -2,7 +2,7 @@
 
 **A lockfile changed. See which dependency trees changed with it.**
 
-**[Try the live demo — no login required](https://qsxustc.github.io/lockray/)** · **[Download v0.1.0](https://github.com/qsxustc/lockray/releases/tag/v0.1.0)** · [GitHub](https://github.com/qsxustc/lockray)
+**[Try the live demo — no login required](https://qsxustc.github.io/lockray/)** · **[Real upgrade examples](docs/REAL-CASES.md)** · [Download v0.1.0](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) · [GitHub](https://github.com/qsxustc/lockray)
 
 [简体中文](README.zh-CN.md) · [Model and boundaries](docs/MODEL.md) · [Product and launch plan](docs/PRODUCT.md) · [Contributing](CONTRIBUTING.md)
 
@@ -10,9 +10,11 @@ Lockray compares two npm `package-lock.json` files and turns a wall of JSON into
 
 It runs locally in your browser or terminal. **No account, API key, registry lookup, or package installation is needed to analyze a lockfile.** Lockray does not execute the packages described by your input.
 
-![Lockray workbench showing synthetic before and after dependency trees](docs/images/workbench.png)
+**New in the v0.2.0 source:** load four real upstream dependency updates from Axios, Marked, and PDF.js, with pinned file hashes and reproducible offline checks. See [what changed](docs/releases/v0.2.0.md). The published download above is v0.1.0; v0.2.0 release assets are not published yet.
 
-*The example uses synthetic packages. The counters describe installed package locations, which can include several copies of the same package.*
+![Lockray reviewing a real Axios dependency refresh with 187 changes](docs/images/real-upgrade.png)
+
+*The screenshot uses Axios’s public historical dependency refresh: 187 changed installed locations, filtered to the 48 changes reachable from `@commitlint/cli`. Counts describe installation locations, including nested copies of a package.*
 
 ## Review a dependency update in context
 
@@ -32,6 +34,21 @@ After:  project → build-kit@3.0.0 → parser@2.0.0
 - **Keep inputs local.** Analysis uses no upload endpoint, analytics, remote fonts, or registry service. Browser inputs live in tab memory.
 
 This is a **locked-tree reachability tool**. A dependency path explains how entries are connected in the supplied snapshots. It does not prove why npm's resolver selected a version, that code uses a dependency, or that a change caused a regression.
+
+## Try a real dependency update
+
+The current source includes a **Real upgrade cases** picker. Select a case to load both complete historical lockfiles from the same static host. The browser checks their bytes against the pinned SHA-256 values before analyzing them. Nothing is installed and no upstream dependency code runs.
+
+| Historical update | Installed locations | Changes |
+| --- | --- | --- |
+| [Axios development dependency refresh](https://github.com/axios/axios/commit/e58cf0e91f7fe3992f027cb5c131e9068baa900b) | 687 → 687 | 29 version changes |
+| [Axios dependency-tree refresh](https://github.com/axios/axios/commit/bdba132964d91d2e74341cf0af0a54e4d2346870) | 715 → 707 | 187: 29 added, 37 removed, 116 version, 5 metadata |
+| [Marked npm upgrade](https://github.com/markedjs/marked/commit/23c82ad02bc8723d9a32c41dd23db155a472d37e) | 660 → 660 | 24 version changes |
+| [PDF.js eslint-plugin-jsdoc major upgrade](https://github.com/mozilla/pdf.js/commit/bf5f6ea4b1b0e689f37dd2dd1b99ad63420537c9) | 965 → 965 | 8 version changes |
+
+These are unchanged snapshots from actual upstream commits and their first parents, rather than locally generated updates. Each pair has source links, byte lengths, hashes, and full upstream license notices. [Explore the evidence and offline checks](docs/REAL-CASES.md), or inspect [the fixture manifest](samples/real/manifest.json).
+
+The Marked case exposed a noisy review signal: nine bundled packages already lacked individual integrity values. v0.2 reports that limitation once as a coverage note instead of nine missing-integrity signals. A previously recorded checksum that disappears still generates a signal. This does not certify the packages or their parent artifact as safe.
 
 ## Download v0.1.0
 
@@ -54,7 +71,7 @@ Requires **Node.js 22 or newer**. From this repository's directory:
 npm start
 ```
 
-Open the loopback URL printed in your terminal. No `npm install` step is required. Load the included synthetic example, or load a before and after `package-lock.json`.
+Open the loopback URL printed in your terminal. No `npm install` step is required. Load the synthetic example, choose a real historical case, or load a before and after `package-lock.json`. The real-case picker is available in the v0.2 source; the older v0.1 archive contains the synthetic example.
 
 1. Compare the two snapshots and inspect the overall change counts.
 2. Choose a direct dependency to narrow the view to changes reachable from it.
@@ -65,11 +82,12 @@ The browser app is static. It can be built for any static HTTP host:
 
 ```sh
 npm test
+npm run test:real
 npm run build
 npm run package:release
 ```
 
-The static build is written to `dist/`. Release packaging requires Git and an existing commit: it builds reproducible source/site ZIPs from **committed HEAD**, excludes uncommitted changes, and writes them with `SHA256SUMS.txt` to `releases/v0.1.0/`. Use `npm run package:release -- --force` to replace existing release files. Module loading requires HTTP or HTTPS; opening `index.html` directly through `file://` is not supported.
+`npm run test:real` checks the bundled real snapshots, their exact change sets, native Node lookup paths, and root ownership without contacting a registry. The static build is written to `dist/`. Release packaging requires Git and an existing commit: it builds reproducible source/site ZIPs from **committed HEAD**, excludes uncommitted changes, and writes them with `SHA256SUMS.txt` to `releases/v<version>/`. Use `npm run package:release -- --force` to replace existing release files. Module loading requires HTTP or HTTPS; opening `index.html` directly through `file://` is not supported.
 
 ## Command line
 
@@ -78,6 +96,10 @@ Keep both lockfile revisions as local files, then compare them:
 ```sh
 # Try the included synthetic pair.
 node bin/lockray.js samples/before.package-lock.json samples/after.package-lock.json
+
+# Review a real historical dependency-tree change in the v0.2 source.
+node bin/lockray.js samples/real/axios-tree/before.package-lock.json \
+  samples/real/axios-tree/after.package-lock.json
 
 node bin/lockray.js before-package-lock.json after-package-lock.json
 
@@ -103,13 +125,13 @@ The CLI reads the two files and never fetches tarballs or invokes npm. Existing 
 
 Lockray is not currently distributed through npm. Use the repository commands above.
 
-The public source is on [GitHub](https://github.com/qsxustc/lockray). The initial source commit [`7c157a4`](https://github.com/qsxustc/lockray/commit/7c157a4b91f8fd76efe501953fa9d381fa867b74) passed all 22 tests and the static build on Node.js 22 and 24 in [GitHub Actions](https://github.com/qsxustc/lockray/actions/runs/38935630469). See [the validation record](docs/VALIDATION.md) for local browser checks and their limits.
+The public source is on [GitHub](https://github.com/qsxustc/lockray). The initial release passed the core/CLI suite and static build on Node.js 22 and 24 in [GitHub Actions](https://github.com/qsxustc/lockray/actions/runs/38935630469). Current validation evidence and its limits are recorded in [the validation record](docs/VALIDATION.md).
 
 The [live browser demo](https://qsxustc.github.io/lockray/) is deployed through [GitHub Pages](https://github.com/qsxustc/lockray/actions/runs/38935630435). Its deployed synthetic example and before/after paths were checked in Chromium. The [v0.1.0 release](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) was built from tagged commit [`69ba814`](https://github.com/qsxustc/lockray/commit/69ba8148417931f939f53a01deb242ecdc12f2d1) by the successful [release workflow](https://github.com/qsxustc/lockray/actions/runs/38935914873); that tag also passed [CI](https://github.com/qsxustc/lockray/actions/runs/38935915793). Release assets and checksums are recorded in [validation](docs/VALIDATION.md).
 
 ## What the model covers
 
-| Input or question | v0.1 scope |
+| Input or question | Current scope |
 | --- | --- |
 | npm lockfile versions | `lockfileVersion: 2` or `3`, with a `packages` map; a root entry enables direct-dependency explanations |
 | Package identity for comparison | Exact installed location, such as `node_modules/a/node_modules/b` |
@@ -147,4 +169,4 @@ These projects are independent. Lockray does not bundle their implementations an
 
 Useful contributions include minimal lockfile fixtures, corrections to path resolution backed by npm behavior, clearer review explanations, accessibility improvements, and reports from real dependency updates with private data removed. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
 
-MIT © 2026 Songxin Qu. See [LICENSE](LICENSE).
+MIT © 2026 Songxin Qu. See [LICENSE](LICENSE). Third-party historical snapshots retain their [full upstream licenses and attribution](samples/real/README.md).

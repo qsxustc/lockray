@@ -2,7 +2,7 @@
 
 **锁文件变了。看清哪些依赖树也跟着变了。**
 
-**[在线体验 — 无需登录](https://qsxustc.github.io/lockray/)** · **[下载 v0.1.0](https://github.com/qsxustc/lockray/releases/tag/v0.1.0)** · [GitHub](https://github.com/qsxustc/lockray)
+**[在线体验 — 无需登录](https://qsxustc.github.io/lockray/)** · **[真实升级案例](docs/REAL-CASES.md)** · [下载 v0.1.0](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) · [GitHub](https://github.com/qsxustc/lockray)
 
 [English](README.md) · [模型与边界](docs/MODEL.md) · [产品与发布计划](docs/PRODUCT.md) · [参与贡献](CONTRIBUTING.md)
 
@@ -10,9 +10,11 @@ Lockray 比较两个 npm `package-lock.json`，把冗长的 JSON diff 变成可�
 
 它可以在浏览器或终端本地运行。**分析锁文件不需要账户、API Key、查询 registry 或安装文件中描述的依赖。** Lockray 不会执行输入包中的代码。
 
-![Lockray 工作台展示合成的前后依赖树](docs/images/workbench.png)
+**v0.2.0 源码新增：**一键加载 Axios、Marked、PDF.js 的四次真实上游依赖升级，附固定文件哈希与可复现的离线核对。详见[更新说明](docs/releases/v0.2.0.md)。上面的正式下载仍为 v0.1.0，v0.2.0 发布包尚未发布。
 
-*截图使用合成包。计数单位是安装位置，同一个包名的多个副本可能分别计数。*
+![Lockray 审查真实 Axios 依赖升级中的 187 处变化](docs/images/real-upgrade.png)
+
+*截图使用 Axios 的真实公开历史升级：共 187 处安装位置变化，当前筛选为 `@commitlint/cli` 可达的 48 处变化。计数单位为安装位置，同名包的嵌套副本单独计数。*
 
 ## 把一次依赖升级放回上下文
 
@@ -32,6 +34,21 @@ Lockray 比较两个 npm `package-lock.json`，把冗长的 JSON diff 变成可�
 - **输入留在本地。** 分析没有上传接口、遥测、远程字体或 registry 查询；浏览器输入仅保存在当前标签页内存中。
 
 这是一个**锁定依赖树可达性工具**。依赖路径说明两份快照中条目的连接关系，不能证明 npm 求解器为什么选择某个版本、业务代码是否使用了这个包，或某项改动是否导致故障。
+
+## 试一次真实依赖升级
+
+当前源码提供**真实升级案例**选择器。选择一个案例，即可从同一静态站点加载完整的前后历史锁文件；浏览器会先核对固定的 SHA-256，再进行分析。不需要安装依赖，也不会执行上游代码。
+
+| 历史升级 | 安装位置 | 变化 |
+| --- | --- | --- |
+| [Axios 开发依赖更新](https://github.com/axios/axios/commit/e58cf0e91f7fe3992f027cb5c131e9068baa900b) | 687 → 687 | 29 项版本变化 |
+| [Axios 依赖树更新](https://github.com/axios/axios/commit/bdba132964d91d2e74341cf0af0a54e4d2346870) | 715 → 707 | 共 187 项：新增 29、删除 37、版本 116、元数据 5 |
+| [Marked npm 升级](https://github.com/markedjs/marked/commit/23c82ad02bc8723d9a32c41dd23db155a472d37e) | 660 → 660 | 24 项版本变化 |
+| [PDF.js eslint-plugin-jsdoc 大版本升级](https://github.com/mozilla/pdf.js/commit/bf5f6ea4b1b0e689f37dd2dd1b99ad63420537c9) | 965 → 965 | 8 项版本变化 |
+
+这些文件来自真实上游提交与其直接父提交，保留原始字节，没有在本地人为运行更新来制作案例。每对快照均包含来源、大小、哈希和完整上游许可。详见[证据与离线复现](docs/REAL-CASES.md)，或直接查看[数据清单](samples/real/manifest.json)。
+
+Marked 案例发现了一个提示噪声：九个随 npm 打包的包原本就没有独立 integrity。v0.2 将此情况合并为一条覆盖说明，不再产生九个缺少完整性信号；原先存在的校验值如果消失，仍会提示。这不代表对应包或父制品已通过安全验证。
 
 ## 下载 v0.1.0
 
@@ -54,7 +71,7 @@ sha256sum -c SHA256SUMS.txt
 npm start
 ```
 
-打开终端打印的本地回环地址。不需要先执行 `npm install`。你可以加载内置合成示例，或分别加载之前、之后的 `package-lock.json`。
+打开终端打印的本地回环地址。不需要先执行 `npm install`。你可以加载合成示例、选择真实历史案例，或分别加载之前、之后的 `package-lock.json`。真实案例选择器包含在 v0.2 源码中；旧版 v0.1 下载包提供合成示例。
 
 1. 比较两份快照，查看整体变化数量。
 2. 选择一个直接依赖，聚焦能够从它到达的变化。
@@ -65,11 +82,12 @@ npm start
 
 ```sh
 npm test
+npm run test:real
 npm run build
 npm run package:release
 ```
 
-静态构建写入 `dist/`。发布打包需要 Git 和已有提交：它从**已提交的 HEAD** 生成可复现的源码和静态站点 ZIP，不包含尚未提交的修改；压缩包与 `SHA256SUMS.txt` 写入 `releases/v0.1.0/`。替换已有发布文件使用 `npm run package:release -- --force`。模块加载需要 HTTP 或 HTTPS；不支持通过 `file://` 直接打开 `index.html`。
+`npm run test:real` 会离线检查真实快照、精确变更集合、原生 Node 查找路径和根依赖归属，不访问 registry。静态构建写入 `dist/`。发布打包需要 Git 和已有提交：它从**已提交的 HEAD** 生成可复现的源码和静态站点 ZIP，不包含尚未提交的修改；压缩包与 `SHA256SUMS.txt` 写入 `releases/v<version>/`。替换已有发布文件使用 `npm run package:release -- --force`。模块加载需要 HTTP 或 HTTPS；不支持通过 `file://` 直接打开 `index.html`。
 
 ## 命令行
 
@@ -78,6 +96,10 @@ npm run package:release
 ```sh
 # 先试试内置合成文件对。
 node bin/lockray.js samples/before.package-lock.json samples/after.package-lock.json
+
+# 查看 v0.2 源码中的真实历史依赖树变化。
+node bin/lockray.js samples/real/axios-tree/before.package-lock.json \
+  samples/real/axios-tree/after.package-lock.json
 
 node bin/lockray.js before-package-lock.json after-package-lock.json
 
@@ -103,13 +125,13 @@ CLI 读取这两个文件，不会下载 tarball 或调用 npm。覆盖已有输
 
 Lockray 目前没有发布到 npm，请使用上面的仓库命令运行。
 
-源码已公开在 [GitHub](https://github.com/qsxustc/lockray)。初始源码提交 [`7c157a4`](https://github.com/qsxustc/lockray/commit/7c157a4b91f8fd76efe501953fa9d381fa867b74) 已在 [GitHub Actions](https://github.com/qsxustc/lockray/actions/runs/38935630469) 中通过 Node.js 22 与 24 的全部 22 项测试及静态构建。本地浏览器检查与验证边界见[验证记录](docs/VALIDATION.md)。
+源码已公开在 [GitHub](https://github.com/qsxustc/lockray)。初始版本已在 [GitHub Actions](https://github.com/qsxustc/lockray/actions/runs/38935630469) 中通过 Node.js 22 与 24 的核心/CLI 测试及静态构建。当前验证证据与边界见[验证记录](docs/VALIDATION.md)。
 
 [在线工作台](https://qsxustc.github.io/lockray/) 已通过 [GitHub Pages](https://github.com/qsxustc/lockray/actions/runs/38935630435) 部署，并在 Chromium 中实测了线上合成示例与前后依赖路径。[v0.1.0 发布包](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) 已由成功的 [Release workflow](https://github.com/qsxustc/lockray/actions/runs/38935914873) 从标签提交 [`69ba814`](https://github.com/qsxustc/lockray/commit/69ba8148417931f939f53a01deb242ecdc12f2d1) 构建，该标签也已通过 [CI](https://github.com/qsxustc/lockray/actions/runs/38935915793)。下载资产与校验值见[验证记录](docs/VALIDATION.md)。
 
 ## 模型覆盖范围
 
-| 输入或问题 | v0.1 范围 |
+| 输入或问题 | 当前范围 |
 | --- | --- |
 | npm 锁文件版本 | `lockfileVersion: 2` 或 `3`，包含 `packages` 映射；根条目用于直接依赖解释 |
 | 比较时的包身份 | 确切的安装位置，例如 `node_modules/a/node_modules/b` |
@@ -145,4 +167,4 @@ Lockray 不查询漏洞库、不检查 tarball 内容、不验证 registry 所�
 
 欢迎贡献可复现的最小锁文件样例、有 npm 行为依据的路径解析修正、更清楚的说明和无障碍改进。请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-MIT © 2026 Songxin Qu，详见 [LICENSE](LICENSE)。
+MIT © 2026 Songxin Qu，详见 [LICENSE](LICENSE)。第三方历史快照保留[完整上游许可与归属说明](samples/real/README.md)。

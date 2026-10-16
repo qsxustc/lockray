@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "retrievedDate": "2026-10-17",
+  "cases": [
+    {
+      "id": "axios",
+      "title": "Axios · development dependency refresh",
+      "repository": "axios/axios",
+      "beforeCommit": "37041f51f5a4db5f2e8abc0807a978b8daebf6e2",
+      "afterCommit": "e58cf0e91f7fe3992f027cb5c131e9068baa900b",
+      "commitUrl": "https://github.com/axios/axios/commit/e58cf0e91f7fe3992f027cb5c131e9068baa900b",
+      "commitMessage": "chore(deps-dev): bump the development_dependencies group with 4 updates (#11322)",
+      "commitDate": "2026-10-14T17:22:48Z",
+      "lockfilePath": "package-lock.json",
+      "license": {
+        "spdx": "MIT",
+        "file": "axios/LICENSE.md",
+        "url": "https://raw.githubusercontent.com/axios/axios/e58cf0e91f7fe3992f027cb5c131e9068baa900b/LICENSE",
+        "sha256": "82761059eaedacb3356803aea8a170d8298609f91b14fc32ee1bfb40d690183c"
+      },
+      "before": {
+        "file": "axios/before.package-lock.json",
+        "sha256": "a701df10183acd5c6bbf107e7f1f53c5651a4341b99a8c6e105beb8afb3d122e",
+        "bytes": 344846,
+        "url": "https://raw.githubusercontent.com/axios/axios/37041f51f5a4db5f2e8abc0807a978b8daebf6e2/package-lock.json"
+      },
+      "after": {
+        "file": "axios/after.package-lock.json",
+        "sha256": "718e2495e56cec727cad71beb0cc7e979228ef80a1860d5547fd127494d04ded",
+        "bytes": 344846,
+        "url": "https://raw.githubusercontent.com/axios/axios/e58cf0e91f7fe3992f027cb5c131e9068baa900b/package-lock.json"
+      },
+      "expected": {
+        "before": 687,
+        "after": 687,
+        "added": 0,
+        "removed": 0,
+        "updated": 29,
+        "metadata": 0,
+        "unchanged": 658,
+        "changed": 29
+      },
+      "focus": {
+        "path": "node_modules/rollup",
+        "beforeVersion": "4.63.5",
+        "afterVersion": "4.64.1"
+      }
+    },
+    {
+      "id": "axios-tree",
+      "title": "Axios · 187 changes across the dependency tree",
+      "repository": "axios/axios",
+      "beforeCommit": "7b1825ff0832981f02a7aa6f3995522b0be297ee",
+      "afterCommit": "bdba132964d91d2e74341cf0af0a54e4d2346870",
+      "commitUrl": "https://github.com/axios/axios/commit/bdba132964d91d2e74341cf0af0a54e4d2346870",
+      "commitMessage": "chore: update packages (#11058)",
+      "commitDate": "2026-07-01T17:30:24Z",
+      "lockfilePath": "package-lock.json",
+      "license": {
+        "spdx": "MIT",
+        "file": "axios-tree/LICENSE.md",
+        "url": "https://raw.githubusercontent.com/axios/axios/bdba132964d91d2e74341cf0af0a54e4d2346870/LICENSE",
+        "sha256": "82761059eaedacb3356803aea8a170d8298609f91b14fc32ee1bfb40d690183c"
+      },
+      "before": {
+        "file": "axios-tree/before.package-lock.json",
+        "sha256": "215ceb2a7a151241a11bad5e2150c54ebf7976cf7e2a9eaa212f427072ef3cc4",
+        "bytes": 358567,
+        "url": "https://raw.githubusercontent.com/axios/axios/7b1825ff0832981f02a7aa6f3995522b0be297ee/package-lock.json"
+      },
+      "after": {
+        "file": "axios-tree/after.package-lock.json",
+        "sha256": "31ae92b0e2d919cfc6f452854eee5ca9c60b340e27ca9d50f711cbaf221a394a",
+        "bytes": 355531,
+        "url": "https://raw.githubusercontent.com/axios/axios/bdba132964d91d2e74341cf0af0a54e4d2346870/package-lock.json"
+      },
+      "expected": {
+        "before": 715,
+        "after": 707,
+        "added": 29,
+        "removed": 37,
+        "updated": 116,
+        "metadata": 5,
+        "unchanged": 557,
+        "changed": 187
+      },
+      "focus": {
+        "path": "node_modules/@commitlint/cli",
+        "beforeVersion": "21.0.2",
+        "afterVersion": "21.2.0"
+      }
+    },
+    {
+      "id": "marked",
+      "title": "Marked · npm upgrade with bundled dependencies",
+      "repository": "markedjs/marked",
+      "beforeCommit": "1b89557177fe5a7d5d430fdc76e7c8a7c0adf6d7",
+      "afterCommit": "23c82ad02bc8723d9a32c41dd23db155a472d37e",
+      "commitUrl": "https://github.com/markedjs/marked/commit/23c82ad02bc8723d9a32c41dd23db155a472d37e",
+      "commitMessage": "chore: update deps (#4108)",
+      "commitDate": "2026-09-22T06:06:36Z",
+      "lockfilePath": "package-lock.json",
+      "license": {
+        "spdx": "MIT",
+        "file": "marked/LICENSE.md",
+        "url": "https://raw.githubusercontent.com/markedjs/marked/23c82ad02bc8723d9a32c41dd23db155a472d37e/LICENSE",
+        "sha256": "8e3a3f82f59a60958f56ca08f445647c32a4733dc7ca6c2c46f6eb898471ab9c"
+      },
+      "before": {
+        "file": "marked/before.package-lock.json",
+        "sha256": "e62c9b5820797e87cd765937a6a56bee429ef2938c29e85d6dfec89c52c42587",
+        "bytes": 295515,
+        "url": "https://raw.githubusercontent.com/markedjs/marked/1b89557177fe5a7d5d430fdc76e7c8a7c0adf6d7/package-lock.json"
+      },
+      "after": {
+        "file": "marked/after.package-lock.json",
+        "sha256": "eea16494fe7da3df73332f7ba61edf54bf2aa69742882ff6a47ee410c5087e15",
+        "bytes": 295520,
+        "url": "https://raw.githubusercontent.com/markedjs/marked/23c82ad02bc8723d9a32c41dd23db155a472d37e/package-lock.json"
+      },
+      "expected": {
+        "before": 660,
+        "after": 660,
+        "added": 0,
+        "removed": 0,
+        "updated": 24,
+        "metadata": 0,
+        "unchanged": 636,
+        "changed": 24
+      },
+      "focus": {
+        "path": "node_modules/npm",
+        "beforeVersion": "11.18.0",
+        "afterVersion": "11.19.1"
+      }
+    },
+    {
+      "id": "pdfjs",
+      "title": "PDF.js · eslint-plugin-jsdoc major upgrade",
+      "repository": "mozilla/pdf.js",
+      "beforeCommit": "7dc3cf0421b09d28d388c7fbceb1ab85952c6cd5",
+      "afterCommit": "bf5f6ea4b1b0e689f37dd2dd1b99ad63420537c9",
+      "commitUrl": "https://github.com/mozilla/pdf.js/commit/bf5f6ea4b1b0e689f37dd2dd1b99ad63420537c9",
+      "commitMessage": "Upgrade `eslint-plugin-jsdoc` to version 65.0.2",
+      "commitDate": "2026-10-03T14:27:44Z",
+      "lockfilePath": "package-lock.json",
+      "license": {
+        "spdx": "Apache-2.0",
+        "file": "pdfjs/LICENSE.md",
+        "url": "https://github.com/mozilla/pdf.js/blob/bf5f6ea4b1b0e689f37dd2dd1b99ad63420537c9/LICENSE",
+        "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+      },
+      "before": {
+        "file": "pdfjs/before.package-lock.json",
+        "sha256": "d8e716be17287a585a734c0318abeaecaad5e9923862c2f5052a3cb511a79478",
+        "bytes": 487004,
+        "url": "https://raw.githubusercontent.com/mozilla/pdf.js/7dc3cf0421b09d28d388c7fbceb1ab85952c6cd5/package-lock.json"
+      },
+      "after": {
+        "file": "pdfjs/after.package-lock.json",
+        "sha256": "d1dce53f6c5f969d42dcb7979ca56557c0430f9d43c9f5fdad674002ef5e95da",
+        "bytes": 487004,
+        "url": "https://raw.githubusercontent.com/mozilla/pdf.js/bf5f6ea4b1b0e689f37dd2dd1b99ad63420537c9/package-lock.json"
+      },
+      "expected": {
+        "before": 965,
+        "after": 965,
+        "added": 0,
+        "removed": 0,
+        "updated": 8,
+        "metadata": 0,
+        "unchanged": 957,
+        "changed": 8
+      },
+      "focus": {
+        "path": "node_modules/eslint-plugin-jsdoc",
+        "beforeVersion": "64.5.4",
+        "afterVersion": "65.0.2"
+      }
+    }
+  ]
+}

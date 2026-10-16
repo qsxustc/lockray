@@ -1,6 +1,6 @@
 {
   "name": "lockray",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Explain npm lockfile changes before you merge them. Local, private, and dependency-free.",
   "type": "module",
   "license": "MIT",
@@ -19,6 +19,7 @@
     "start": "node scripts/serve.js",
     "build": "node scripts/build.js",
     "test": "node --test",
+    "test:real": "node --test tests/real-cases.test.js",
     "package:release": "node scripts/package-release.js"
   },
   "keywords": [

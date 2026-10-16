@@ -1,6 +1,6 @@
 # Lockray comparison model
 
-This document describes the v0.1 engine in [`src/core.js`](../src/core.js). The browser and CLI use the same engine. Its output describes relationships recorded in two npm lockfiles; it does not reproduce npm's solver, prove why a version was chosen, or inspect application imports.
+This document describes the v0.2 engine in [`src/core.js`](../src/core.js). The browser and CLI use the same engine. Its output describes relationships recorded in two npm lockfiles; it does not reproduce npm's solver, prove why a version was chosen, or inspect application imports. [Real historical cases](REAL-CASES.md) exercise the model with reproducible offline comparisons.
 
 ## Accepted inputs and limits
 
@@ -15,12 +15,12 @@ The root descriptor is `packages[""]`. If it is missing, Lockray emits a warning
 | Declared dependency edges | At most 100,000 entries across installed descriptors' `dependencies`, `optionalDependencies`, and `peerDependencies`; duplicate names in different fields count separately |
 | Root attribution | At most 100,000 visited root/location relationships per snapshot; exceeding this budget produces partial attribution and a warning |
 | Exported dependency chains | 50,000 total path segments or 4,000,000 characters across both snapshots' changed-entry paths; later paths are explicitly omitted when a budget is reached |
-| Package path length | At most 4,096 characters; malformed paths are rejected |
+| Installed package path length | At most 4,096 characters; malformed project installation paths are rejected |
 | Browser analysis time | A 15-second Worker timeout cancels the operation and produces no report; the CLI has no corresponding wall-clock timeout |
 
 Non-installed workspace target descriptors count toward the package-entry limit even though they do not enter the installed graph. Root declarations do not count toward the declared-edge limit. These are processing bounds, not guarantees about runtime or memory on every device.
 
-Descriptors must be objects. Installed slots must end in `node_modules/<name>` or `node_modules/@scope/<name>`. Package paths are relative, use `/`, and cannot contain empty, `.` or `..` components. Known string, boolean, and dependency-map fields are type checked; arbitrary metadata is retained for comparison, not comprehensively validated as npm's schema.
+Descriptors must be objects. Project installation slots must end in `node_modules/<name>` or `node_modules/@scope/<name>`. Their paths are relative, use `/`, and cannot contain empty, `.` or `..` components. External file/link target descriptors are classified as opaque metadata before those installed-slot checks; their treatment is described below. Known string, boolean, and dependency-map fields in installed descriptors are type checked; arbitrary metadata is retained for comparison, not comprehensively validated as npm's schema.
 
 ## Installed locations are the comparison identity
 
@@ -49,7 +49,9 @@ The supplementary `versionChange` label compares exact strings that look like `m
 
 ## Root declarations
 
-Root dependencies come from `packages[""].dependencies`, `devDependencies`, `peerDependencies`, and `optionalDependencies`. A name declared in several fields becomes one root. The precedence for its category is optional, production, development, then peer. Root names are sorted by JavaScript string comparison.
+Root dependencies come from `packages[""].dependencies`, `devDependencies`, `peerDependencies`, and `optionalDependencies`. A name declared in several fields becomes one root owner, while every declaration remains recorded. The effective category precedence is **development > optional > production > peer**, matching the root-edge loading order checked against npm Arborist 9.7.0. This order corrected v0.1's production-first assumption for duplicate root declarations. It chooses the effective recorded edge; Lockray still does not solve an install or check that its range is satisfied.
+
+Each parsed root includes `declarations`, an ordered list of `{ kind, range }` entries in peer, production, optional, development order. The final entry supplies the effective `kind` and `range`. Root names are sorted by JavaScript string comparison. Two declarations of one name do not create two root owners or duplicate impact counts.
 
 Each root resolves to the exact top-level slot `node_modules/<declared-name>` when present. If a required root is missing, a warning is emitted. Missing optional roots and root peers marked optional in `peerDependenciesMeta` do not produce that warning. Declared version ranges are retained but are not solved or checked for satisfaction.
 
@@ -77,7 +79,11 @@ Neither a matching version range nor platform compatibility is checked. A record
 
 ## Links, workspaces, and aliases
 
-Entries whose paths do not include an installed `node_modules` slot are excluded from the installed graph and diff. Their presence produces a workspace coverage warning. Their content changes do not become package-change rows.
+Entries whose paths do not include an installed `node_modules` slot are excluded from the installed graph and diff. Their presence produces a workspace/link coverage warning. Their content changes do not become package-change rows.
+
+npm can also record a file/link target outside the project, such as `../sibling` or `../../shared`. Lockray recognizes keys equal to `..`, beginning with `../`, beginning with `/` or `\`, or beginning with a Windows drive and slash/backslash as opaque targets. This classification happens before installed-slot validation, even when the target's key contains a nested `node_modules` component. The descriptor must still be an object and counts toward the input-entry limit, but its contents do not enter the graph or installed-location diff. Lockray does not normalize that key into a local path, read the target, or traverse its dependencies.
+
+This permits an npm-generated sibling-link lockfile that v0.1 rejected as an invalid installation path. It does not add external filesystem access or workspace expansion. Actual project installation keys remain subject to strict path validation.
 
 An installed descriptor with `link: true` is compared at its own slot and may be reached as a leaf. Its target descriptor and outgoing target dependencies are not expanded. Lockray does not dereference `resolved`, traverse symlinks, or model workspace realpaths. A changed workspace target with an unchanged link can therefore produce no installed-slot change while still producing a workspace limitation warning.
 
@@ -113,7 +119,9 @@ Signals are evaluated **only for changed installed locations with an after descr
 | `source-host-changed` | A location exists before and after and its parsed source hostname differs | Uses hostname only, not port, path, account, or registry ownership |
 | `source-protocol-changed` | A location exists before and after and its parsed source protocol differs | A scheme change is a review prompt, not proof of insecure transport or an attack |
 | `integrity-changed-same-version` | Version strings are equal, both integrity strings are nonempty, and they differ | A string comparison; algorithms, digest sets, and artifact bytes are not validated |
-| `integrity-missing` | The changed after descriptor has no nonempty integrity value and is not a link | May be legitimate for local, Git, or bundled dependencies; need not be newly missing |
+| `integrity-missing` | The changed after descriptor has no nonempty integrity value, is not a link, and either is not bundled or had a nonempty integrity value before | May be legitimate for local or Git dependencies; a previously recorded checksum disappearing remains a signal even for a bundled slot |
+
+A changed `inBundle: true` slot that has no integrity value in either snapshot, or is newly added without one, is summarized in a coverage note instead of receiving an individual missing-integrity signal. This was prompted by the real Marked npm update: nine bundled locations legitimately had no individual hashes before and after. The note counts affected changed locations and states that neither package contents nor parent-package checksums were verified. It does not suppress other signal types, and it does not certify the bundle's safety. Non-bundled missing-integrity entries retain their signal; actual loss of a previously recorded value remains visible.
 
 Source extraction first uses the platform `URL` parser, lowercases `hostname` and protocol, and strips the protocol's final colon. If parsing fails, an SCP-like source can be classified as SSH. Other nonempty sources are `local-or-unknown`; an absent source has empty host/protocol. These fallback categories are heuristic. An added package has no previous source and does not generate a source-change signal.
 
@@ -127,10 +135,18 @@ The [npm lockfile format documentation](https://docs.npmjs.com/cli/v11/configuri
 
 The complete root descriptors are compared independently. Any structural difference produces the coverage note **“Root package metadata changed. Summary counts describe installed dependency slots only.”** Root-only changes can therefore coexist with zero installed changes.
 
-The engine also compares the effective root declarations by name, range string, and dependency category. Added, removed, or changed declarations are recorded separately in JSON `rootChanges` and the Markdown declaration table. Each entry includes its effective before/after declaration. The corresponding root group exposes `beforeRange`, `afterRange`, `beforeKind`, `afterKind`, and `declarationChange`. These changes do not increment the installed-location summary. Because duplicate declarations are collapsed using the category precedence described above, this is not a field-by-field copy of every root manifest field. Changes outside the effective declarations generate the general root metadata note but no declaration entry. Lockray does not decide whether ranges agree with the installed versions.
+The engine compares root declarations by name, effective range/category, and the complete `declarations` list. Added, removed, or changed declarations are recorded separately in JSON `rootChanges` and the Markdown declaration table. A change to an overridden production range is therefore still reported when a development declaration remains effective and installed versions do not change.
+
+Each entry includes its before/after declaration set and effective values. The corresponding root group exposes `beforeRange`, `afterRange`, `beforeKind`, `afterKind`, `beforeDeclarations`, `afterDeclarations`, and `declarationChange`. Markdown displays all recorded duplicate declarations and labels the effective one. These changes do not increment the installed-location summary. Root fields unrelated to those four dependency maps can generate the general root metadata note without a declaration entry. Lockray does not decide whether ranges agree with the installed versions.
 
 Top-level fields outside the root descriptor and installed `packages` entries do not create installed-change rows. Changes to the lockfile version, project name, or project version remain snapshot metadata rather than package changes.
 
 JSON contains all changed installed descriptors, their original metadata, available paths, root declarations and groups, signals, and coverage notes. It is not a full copy of either source lockfile. Markdown contains the complete changed-location table, available paths, declaration changes, root counts, signals, and notes; it is a review summary rather than every raw descriptor field. Browser filters change the visible list, not the comparison or the exported reports.
 
 The app displays 100 matching rows initially and can reveal more. Display order uses UI sorting and does not change path tie-breaking. Review coverage notes even when the main summary contains zero changes or zero signals. Neither output format anonymizes private names, paths, or source URLs.
+
+## Historical fixture checks
+
+The browser's real-case picker loads the catalog and selected lockfiles from the application's own static host. Each raw lockfile must match the SHA-256 pinned in [`samples/real/manifest.json`](../samples/real/manifest.json) before analysis. Hash verification needs Web Crypto through HTTPS or a loopback development URL. This verifies the bundled fixture bytes, not the package artifacts referenced inside the lockfile. Loading a historical example never installs its dependencies.
+
+`npm run test:real` verifies those snapshots offline, compares every changed location with an independent raw-JSON diff, and checks path lengths, edges, and root owners using the running Node executable's native lookup directories. An optional check against already installed npm Arborist uses `loadVirtual()` with offline mode and scripts disabled. See [the real-case evidence](REAL-CASES.md) for commands and the distinction between the default test oracle and optional npm implementation check.

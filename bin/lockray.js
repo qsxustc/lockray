@@ -2,6 +2,7 @@
 import { readFile, realpath, stat, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { analyze, toMarkdown, LIMITS } from "../src/core.js";
+import { VERSION } from "../src/version.js";
 
 const help = `Lockray — offline npm lockfile review
 
@@ -33,7 +34,7 @@ async function main() {
       return;
     }
     if (arg === "--version" || arg === "-v") {
-      process.stdout.write("0.1.0\n");
+      process.stdout.write(`${VERSION}\n`);
       return;
     }
     if (arg === "--force") force = true;

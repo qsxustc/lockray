@@ -1,3 +1,5 @@
+import { VERSION } from "./version.js";
+
 const $ = (selector) => document.querySelector(selector);
 const MAX_BYTES = 10 * 1024 * 1024;
 const state = {
@@ -16,6 +18,8 @@ const state = {
   rootLimit: 100,
   view: "review",
   mode: "demo",
+  example: null,
+  examples: [],
   worker: null,
   revision: 0,
   reads: { before: 0, after: 0 },
@@ -196,6 +200,29 @@ const en = {
 };
 const defaults = new Map();
 Object.assign(zh, {
+  realExamples: "真实升级案例",
+  chooseExample: "选择一个公开项目…",
+  examplePrivacy: "固定版本的公开快照，仅在选择后加载。",
+  realCase: "真实历史案例",
+  publicSnapshot: "公开历史快照",
+  bundled: "打包附带依赖",
+  sourceCommit: "查看上游提交",
+  fixtureLicense: "快照许可与来源",
+  exampleError: "无法加载此案例。请重试，或选择自己的锁文件。",
+});
+Object.assign(en, {
+  realExamples: "Real upgrade cases",
+  chooseExample: "Choose a public project…",
+  examplePrivacy: "Pinned public snapshots. Loaded only when selected.",
+  realCase: "REAL HISTORY",
+  publicSnapshot: "Public historical snapshot",
+  bundled: "Bundled dependency",
+  sourceCommit: "View upstream commit",
+  fixtureLicense: "Fixture license & attribution",
+  exampleError:
+    "Could not load this case. Try again or choose your own lockfiles.",
+});
+Object.assign(zh, {
   omittedChain: "该路径因输出预算被省略；详见分析说明。",
   declarationChange: "声明变化",
   chainScope: "展示从任一直接依赖出发的最短路径，可能与当前筛选分组不同。",
@@ -238,6 +265,7 @@ function translate() {
   $("#search").placeholder = t("search");
   $("#language").textContent = state.lang === "zh" ? "EN" : "中文";
   renderFileNames();
+  renderExamplePicker();
   if (state.report) render();
 }
 function message(key, error = false) {
@@ -261,6 +289,7 @@ function invalidate() {
   state.selected = null;
   state.limit = 100;
   $("#workspace").setAttribute("aria-busy", "false");
+  $("#project-name").textContent = "";
   $("#result").classList.add("hidden");
   $("#empty").classList.remove("hidden");
   $("#export").disabled = true;
@@ -269,12 +298,23 @@ function renderFileNames() {
   for (const slot of ["before", "after"]) {
     $(`#${slot}-name`).textContent = state.names[slot] || "package-lock.json";
     $(`#${slot}-hint`).textContent = state[slot]
-      ? t(state.mode === "demo" ? "demoHint" : "loadedHint")
+      ? t(
+          state.mode === "demo"
+            ? "demoHint"
+            : state.mode === "real"
+              ? "publicSnapshot"
+              : "loadedHint",
+        )
       : t(slot === "before" ? "dropBefore" : "dropAfter");
   }
   $("#dataset-label").textContent = t(
-    state.mode === "demo" ? "synthetic" : "userFiles",
+    state.mode === "demo"
+      ? "synthetic"
+      : state.mode === "real"
+        ? "realCase"
+        : "userFiles",
   );
+  renderProvenance();
 }
 function resetFilters() {
   state.root = "";
@@ -287,7 +327,7 @@ function resetFilters() {
   $("#signals-only").checked = false;
 }
 function prepareUserInput() {
-  if (state.mode === "demo") {
+  if (state.mode !== "user") {
     state.before = null;
     state.after = null;
     state.names = {};
@@ -295,6 +335,7 @@ function prepareUserInput() {
     state.reads.after++;
   }
   state.mode = "user";
+  state.example = null;
   invalidate();
   resetFilters();
   renderFileNames();
@@ -394,6 +435,7 @@ async function loadDemo() {
       after: "after.package-lock.json",
     };
     state.mode = "demo";
+    state.example = null;
     resetFilters();
     renderFileNames();
     compare();
@@ -402,6 +444,108 @@ async function loadDemo() {
       message("demoError", true);
       $("#workspace").setAttribute("aria-busy", "false");
     }
+  }
+}
+function renderExamplePicker() {
+  const select = $("#real-example");
+  select.replaceChildren(new Option(t("chooseExample"), ""));
+  for (const item of state.examples)
+    select.add(new Option(item.title, item.id));
+  select.value = state.example?.id || "";
+  select.disabled = !state.examples.length;
+}
+function renderProvenance() {
+  const el = $("#case-provenance");
+  el.replaceChildren();
+  const item = state.mode === "real" ? state.example : null;
+  el.classList.toggle("hidden", !item);
+  $("#real-example").value = item?.id || "";
+  if (!item) return;
+  const source = document.createElement("a");
+  source.href = `https://github.com/${item.repository}/commit/${item.afterCommit}`;
+  source.target = "_blank";
+  source.rel = "noreferrer";
+  source.textContent = t("sourceCommit") + " ↗";
+  const attribution = document.createElement("a");
+  attribution.href = new URL("../samples/real/README.md", import.meta.url).href;
+  attribution.target = "_blank";
+  attribution.rel = "noreferrer";
+  attribution.textContent = t("fixtureLicense");
+  el.append(
+    `${item.repository} · ${item.beforeCommit.slice(0, 7)} → ${item.afterCommit.slice(0, 7)} · `,
+    source,
+    " · ",
+    attribution,
+  );
+}
+async function loadExampleCatalog() {
+  try {
+    const response = await fetch(
+      new URL("../samples/real/manifest.json", import.meta.url),
+    );
+    if (!response.ok) return;
+    const manifest = await response.json();
+    state.examples = manifest.cases.filter(
+      (item) =>
+        /^[a-z0-9-]+$/.test(item.id) &&
+        /^[\w.-]+\/[\w.-]+$/.test(item.repository) &&
+        /^[a-f0-9]{40}$/.test(item.beforeCommit) &&
+        /^[a-f0-9]{40}$/.test(item.afterCommit),
+    );
+    renderExamplePicker();
+  } catch {
+    /* The synthetic example and private file import remain available. */
+  }
+}
+async function loadRealExample(id) {
+  const item = state.examples.find((example) => example.id === id);
+  if (!item) return;
+  invalidate();
+  const token = state.revision;
+  state.reads.before++;
+  state.reads.after++;
+  // Stop exposing the previous dataset while a new pair is being read.
+  state.before = null;
+  state.after = null;
+  state.names = {};
+  state.mode = "real";
+  state.example = item;
+  resetFilters();
+  renderFileNames();
+  message("pending");
+  try {
+    const texts = await Promise.all(
+      ["before", "after"].map(async (slot) => {
+        const expected = `${item.id}/${slot}.package-lock.json`;
+        if (item[slot].file !== expected)
+          throw new Error("Unexpected fixture path");
+        const response = await fetch(
+          new URL(`../samples/real/${expected}`, import.meta.url),
+        );
+        if (!response.ok) throw new Error("Case unavailable");
+        const bytes = await response.arrayBuffer();
+        if (bytes.byteLength > MAX_BYTES) throw new Error("Oversized fixture");
+        const digest = [
+          ...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
+        ]
+          .map((byte) => byte.toString(16).padStart(2, "0"))
+          .join("");
+        if (digest !== item[slot].sha256)
+          throw new Error("Fixture digest mismatch");
+        return new TextDecoder().decode(bytes);
+      }),
+    );
+    if (token !== state.revision) return;
+    state.before = texts[0];
+    state.after = texts[1];
+    state.names = {
+      before: `${item.repository} · ${item.beforeCommit.slice(0, 7)}`,
+      after: `${item.repository} · ${item.afterCommit.slice(0, 7)}`,
+    };
+    renderFileNames();
+    compare();
+  } catch {
+    if (token === state.revision) message("exampleError", true);
   }
 }
 function stat(label, value, hint, cls = "", extra = "") {
@@ -427,6 +571,12 @@ function renderSummary() {
   $("#project-name").textContent =
     state.report.after?.name || state.report.name || "";
 }
+function rootDeclaration(root, side) {
+  const declarations = root[`${side}Declarations`] || [];
+  return declarations.length > 1
+    ? declarations.map((item) => `${item.kind}: ${item.range}`).join(" · ")
+    : root[`${side}Range`] || "—";
+}
 function renderRoots() {
   const report = state.report;
   const roots = [...report.roots].sort(
@@ -441,7 +591,7 @@ function renderRoots() {
           `<i class="${k}" style="width:${((root[k] || 0) / max) * 100}%"></i>`,
       )
       .join("");
-    html += `<button type="button" class="root-button ${state.root === "package:" + root.name ? "active" : ""}" data-root="package:${esc(root.name)}" aria-pressed="${state.root === "package:" + root.name}" title="${esc(root.name)}"><span class="root-top"><span class="root-name">${esc(root.name)}</span><span class="root-count">${root.changed}</span></span><span class="root-bar">${bar}</span><span class="root-sub">${root.changed} ${esc(t("rootChanges"))}${root.declarationChange ? ` · ${esc(t("declarationChange"))}` : ""}</span>${root.declarationChange ? `<span class="root-range">${esc(root.beforeRange || "—")} → ${esc(root.afterRange || "—")}</span>` : ""}</button>`;
+    html += `<button type="button" class="root-button ${state.root === "package:" + root.name ? "active" : ""}" data-root="package:${esc(root.name)}" aria-pressed="${state.root === "package:" + root.name}" title="${esc(root.name)}"><span class="root-top"><span class="root-name">${esc(root.name)}</span><span class="root-count">${root.changed}</span></span><span class="root-bar">${bar}</span><span class="root-sub">${root.changed} ${esc(t("rootChanges"))}${root.declarationChange ? ` · ${esc(t("declarationChange"))}` : ""}</span>${root.declarationChange ? `<span class="root-range">${esc(rootDeclaration(root, "before"))} → ${esc(rootDeclaration(root, "after"))}</span>` : ""}</button>`;
   }
   if (roots.length > state.rootLimit)
     html += `<button type="button" class="root-button" id="root-more">${esc(t("rootMore"))} (${roots.length - state.rootLimit}) ↓</button>`;
@@ -558,7 +708,7 @@ function renderDetail() {
     )
     .join("");
   $("#detail").innerHTML =
-    `<div class="detail-eyebrow"><span class="detail-tag ${c.status}">${esc(t(c.status))}</span><span class="detail-id">${esc(c.versionChange)}</span></div><h3>${esc(c.name)}</h3><div class="detail-version">${versionHTML(c, true)}</div><div class="detail-chips"><span>${esc(t(c.direct ? "direct" : "transitive"))}</span><span>${esc(t(pkg.dev ? "development" : "runtime"))}</span>${pkg.optional ? `<span>${esc(t("optional"))}</span>` : ""}${pkg.hasInstallScript ? `<span>${esc(t("installScript"))}</span>` : ""}</div><div class="detail-location"><h4 class="small-heading">${esc(t("location"))}</h4><div class="location-value">${esc(c.path)}</div></div>${c.signals.map((s) => `<div class="signal-card"><h4>${esc(s.label)}</h4><p>${esc(s.detail)}</p></div>`).join("")}<div class="chain-section"><h4 class="small-heading chain-heading">${esc(t("chain"))}<span class="chain-rule">${esc(t("shortest"))}</span></h4><p class="chain-scope">${esc(t("chainScope"))}</p><div class="chain-sides"><div><div class="chain-label">${esc(t("before"))}</div>${chainHTML(c.beforeChain, !!c.before, true, c.beforeChainOmitted)}</div><div><div class="chain-label">${esc(t("after"))}</div>${chainHTML(c.afterChain, !!c.after, false, c.afterChainOmitted)}</div></div></div><details class="evidence"><summary>${esc(t("evidence"))}</summary><p class="evidence-legend"><span>− ${esc(t("before"))}</span><span>+ ${esc(t("after"))}</span></p>${evidence ? `<table class="evidence-table"><tbody>${evidence}</tbody></table><p class="chain-scope">${esc(t("evidenceLimit"))}</p>` : `<p class="chain-empty">${esc(t("noFieldChanges"))}</p>`}</details>`;
+    `<div class="detail-eyebrow"><span class="detail-tag ${c.status}">${esc(t(c.status))}</span><span class="detail-id">${esc(c.versionChange)}</span></div><h3>${esc(c.name)}</h3><div class="detail-version">${versionHTML(c, true)}</div><div class="detail-chips"><span>${esc(t(c.direct ? "direct" : "transitive"))}</span><span>${esc(t(pkg.dev ? "development" : "runtime"))}</span>${pkg.optional ? `<span>${esc(t("optional"))}</span>` : ""}${pkg.inBundle ? `<span>${esc(t("bundled"))}</span>` : ""}${pkg.hasInstallScript ? `<span>${esc(t("installScript"))}</span>` : ""}</div><div class="detail-location"><h4 class="small-heading">${esc(t("location"))}</h4><div class="location-value">${esc(c.path)}</div></div>${c.signals.map((s) => `<div class="signal-card"><h4>${esc(s.label)}</h4><p>${esc(s.detail)}</p></div>`).join("")}<div class="chain-section"><h4 class="small-heading chain-heading">${esc(t("chain"))}<span class="chain-rule">${esc(t("shortest"))}</span></h4><p class="chain-scope">${esc(t("chainScope"))}</p><div class="chain-sides"><div><div class="chain-label">${esc(t("before"))}</div>${chainHTML(c.beforeChain, !!c.before, true, c.beforeChainOmitted)}</div><div><div class="chain-label">${esc(t("after"))}</div>${chainHTML(c.afterChain, !!c.after, false, c.afterChainOmitted)}</div></div></div><details class="evidence"><summary>${esc(t("evidence"))}</summary><p class="evidence-legend"><span>− ${esc(t("before"))}</span><span>+ ${esc(t("after"))}</span></p>${evidence ? `<table class="evidence-table"><tbody>${evidence}</tbody></table><p class="chain-scope">${esc(t("evidenceLimit"))}</p>` : `<p class="chain-empty">${esc(t("noFieldChanges"))}</p>`}</details>`;
 }
 function renderView() {
   $("#explorer").classList.toggle("hidden", state.view !== "review");
@@ -621,6 +771,9 @@ for (const slot of ["before", "after"]) {
   card.addEventListener("drop", (e) => loadFile(slot, e.dataTransfer.files[0]));
 }
 $("#demo").addEventListener("click", loadDemo);
+$("#real-example").addEventListener("change", (event) =>
+  loadRealExample(event.target.value),
+);
 $("#empty-demo").addEventListener("click", loadDemo);
 $("#clear").addEventListener("click", () => {
   invalidate();
@@ -628,6 +781,7 @@ $("#clear").addEventListener("click", () => {
   state.after = null;
   state.names = {};
   state.mode = "user";
+  state.example = null;
   state.reads.before++;
   state.reads.after++;
   resetFilters();
@@ -749,4 +903,6 @@ document.addEventListener("keydown", (e) => {
   }
 });
 translate();
+$("#app-version").textContent = `v${VERSION}`;
 loadDemo();
+loadExampleCatalog();

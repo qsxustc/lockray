@@ -1,10 +1,45 @@
-# v0.1.0 validation
+# v0.2.0 validation
+
+Checked on 2026-10-17 with Node.js 24.18.0 on macOS. `npm test` passes **48 tests**, including 13 tests over four complete public historical lockfile pairs. `npm run build` produces the static app with the example catalog, original fixture bytes, and full upstream license files. The archived v0.1.0 record below describes that older tag only.
+
+## Real upstream upgrades and independent checks
+
+The [real-case report](REAL-CASES.md) and [immutable fixture manifest](../samples/real/manifest.json) identify each exact upstream update and first parent. The inputs were downloaded as public metadata; no upstream dependency installation, build, or lifecycle script was used.
+
+| Case | Installed before → after | Added | Removed | Updated | Metadata | Total changed |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Axios development refresh | 687 → 687 | 0 | 0 | 29 | 0 | 29 |
+| Axios tree refresh | 715 → 707 | 29 | 37 | 116 | 5 | 187 |
+| Marked npm upgrade | 660 → 660 | 0 | 0 | 24 | 0 | 24 |
+| PDF.js jsdoc major upgrade | 965 → 965 | 0 | 0 | 8 | 0 | 8 |
+
+Offline regression tests verify source-file and license SHA-256, compare the entire change set against `util.isDeepStrictEqual` over raw descriptors, check self-comparison and reversed snapshots, and validate all emitted path edges, shortest lengths and root owners against native Node lookup plus an independent BFS.
+
+The optional `scripts/check-npm-edges.js` was also run with the installed npm Arborist **9.7.0**, using only offline `loadVirtual()`. All four before/after inventories, resolution targets, changed-entry shortest paths and root owners matched. The [recorded output](real-cases-npm.json) had no resolution, path or owner differences, no outside-model edges, and complete attribution/path coverage for all four cases. This is evidence for these snapshots and this oracle version, not proof of complete npm solver compatibility.
+
+## Fix verification
+
+- Marked’s nine changed bundled entries without individual integrity values now produce one coverage note and zero missing-integrity signals. Separate regression tests preserve alerts for ordinary missing values, real checksum removal, lifecycle flags and source changes.
+- Duplicate root declarations preserve all categories and ranges, follow current npm’s effective precedence, and expose changes to overridden fields without duplicating root ownership. A browser-pasted pair with only an overridden production range change showed zero installed changes and one complete declaration change in both the root panel and Markdown.
+- A real offline npm-generated sibling file/link case was reduced to regression fixtures. `../`, `../../` and absolute target metadata stay opaque; links compare as leaves and no external path is read. A browser-pasted sibling pair analyzed successfully while reporting the link coverage boundary. Malformed internal installation locations still fail validation.
+
+## Browser checks
+
+All four catalog cases loaded successfully in Chromium after their SHA-256 checks. The 187-change case initially showed 100 rows, revealed all 187 on demand, and retained the complete comparison in the report. A real JSON download while filtered to a 48-change root group still contained all 187 changes. Package search, root filtering, before/after chains and bundled-dependency badges were exercised. The PDF.js case showed the expected eight changes; Marked showed 24 changes and the nine-entry bundled coverage note.
+
+Switching from a real case to the first user file cleared the opposite example snapshot, provenance and stale project name, with export disabled. Both 390 × 844 and 1280 × 900 viewport checks had no horizontal document overflow. The 43-root Axios case had a 445-pixel scroll region instead of expanding every root down the page. No warning/error console messages were recorded in the exercised flows.
+
+The new workbench screenshot uses the real Axios tree refresh and its `@commitlint/cli` group, not synthetic metrics. Release and remote CI results are added here after verification.
+
+---
+
+# Archived v0.1.0 validation
 
 The v0.1.0 source candidate was checked on 2026-10-17 using Node.js 24.18.0 on macOS. The source is public at [qsxustc/lockray](https://github.com/qsxustc/lockray). Initial source commit [`7c157a4`](https://github.com/qsxustc/lockray/commit/7c157a4b91f8fd76efe501953fa9d381fa867b74) passed the 22-test suite and static build on both Node.js 22 and 24 in [GitHub Actions](https://github.com/qsxustc/lockray/actions/runs/38935630469).
 
 ## Automated checks
 
-`npm test` passes 22 tests covering scoped and nested installation slots, hoisted resolution, multiple root owners, separate before/after paths, cycles, optional and peer declarations, links, aliases, key-order stability, arbitrary metadata, source/integrity/script signals, input limits, Markdown escaping, root-only declaration changes, bounded chain output, CLI output formats, exit codes, and input/output overwrite protection (including symlink and hardlink aliases).
+At the v0.1.0 tag, `npm test` passed 22 tests covering scoped and nested installation slots, hoisted resolution, multiple root owners, separate before/after paths, cycles, optional and peer declarations, links, aliases, key-order stability, arbitrary metadata, source/integrity/script signals, input limits, Markdown escaping, root-only declaration changes, bounded chain output, CLI output formats, exit codes, and input/output overwrite protection (including symlink and hardlink aliases).
 
 `npm run build` succeeds and produces the static app. Relative Markdown links were checked for missing local targets. All referenced local targets exist.
 

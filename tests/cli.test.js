@@ -129,5 +129,5 @@ test("CLI rejects missing arguments, invalid options, and nonexistent files", ()
   }
   assert.equal(run(["--help"]).status, 0);
   assert.match(run(["--help"]).stdout, /Usage:/);
-  assert.equal(run(["--version"]).stdout, "0.1.0\n");
+  assert.equal(run(["--version"]).stdout, "0.2.0\n");
 });

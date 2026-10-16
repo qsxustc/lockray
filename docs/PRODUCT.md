@@ -16,43 +16,46 @@ Many tools already summarize lockfile versions or produce review signals. [LockS
 
 This is a differentiation hypothesis, not a claim that nobody else implements dependency paths. User feedback should decide whether the combination saves meaningful review time.
 
-## v0.1 release scope
+## Current v0.2 source scope
 
 - npm `package-lock.json` v2/v3 with explicit format validation.
 - Comparison by installed location, preserving nested copies.
 - Added, removed, version-changed, and metadata-only entries.
 - Direct-dependency reachability groups with visible overlap semantics.
 - One shortest supported root path per snapshot for a selected location.
-- Separate root dependency declaration changes, including ranges and dependency categories.
+- Separate root dependency declaration changes, retaining duplicate and overridden declarations.
 - Explicit metadata review signals with evidence and conservative language.
 - Browser workbench and CLI sharing the same deterministic engine.
-- Synthetic examples, Markdown/JSON exports, English/Chinese documentation.
+- A synthetic example and four unmodified upstream historical updates with pinned hashes and retained licenses.
+- Browser case selection, Markdown/JSON exports, English/Chinese documentation, and reproducible offline real-case tests.
 - No analysis backend, registry calls, accounts, telemetry, or input execution.
 
-Location changes are additions and removals. v0.1 does not infer package relocation. Other lockfile ecosystems, comprehensive npm solver behavior, vulnerability databases, license compliance, artifact inspection, runtime analysis, and automated remediation are outside this release.
+Location changes are additions and removals; Lockray does not infer package relocation. Other lockfile ecosystems, comprehensive npm solver behavior, vulnerability databases, license compliance, artifact inspection, runtime analysis, and automated remediation remain outside the model.
+
+The v0.2 investigation produced three concrete corrections: bundled-integrity noise becomes explicit coverage, duplicate root declarations follow the checked npm precedence while retaining all fields, and sibling-link targets are accepted as opaque metadata without expanding or reading external paths. [The real-case record](REAL-CASES.md) separates original upstream updates from focused npm-shaped regressions and explains the independent checks.
 
 ## Public demo story
 
-Start with a synthetic direct dependency major upgrade that changes several transitive installed locations. Show the project total, select the direct dependency, click one transitive change, and compare the two path explanations. Then show a metadata signal and its evidence. Export the Markdown report.
+Start with the real Axios tree refresh: 715 → 707 installed locations and 187 changes. Select a direct dependency, inspect one changed location, compare its shortest paths, and export the Markdown report. Use Marked next to explain why nine bundled entries are now summarized as coverage rather than nine missing-integrity signals. The smaller Axios and PDF.js examples offer shorter demonstrations.
 
-The screenshot and a short recording should demonstrate an actual result. Numbers shown in public material must come from the included fixture and current engine. Label packages and outputs as synthetic. Do not imply a benchmark or real incident.
+Screenshots and a short recording should show actual results. Numbers must come from the selected fixture and current engine. Label synthetic examples as synthetic and historical upstream examples with their source commits. Do not imply a performance benchmark, security verdict, upstream endorsement, or incident diagnosis.
 
 A concise introduction:
 
-> A lockfile changed. See which dependency trees changed with it. Lockray groups changes by direct dependency and shows shortest before/after paths, entirely on your device.
+> A lockfile changed. See which dependency trees changed with it. Explore real Axios, Marked, and PDF.js upgrades, follow before/after paths, and reproduce the checks offline.
 
 ## Release checklist
 
-1. Run the test suite and static build from a clean source checkout on supported Node.js versions. Validate the packaged source, CLI, and static site.
-2. Exercise loading two files, switching examples, filtering, selecting paths, clearing the workspace, malformed input, and both export formats in a browser. Check keyboard interaction and a narrow viewport.
+1. Run the complete suite, `npm run test:real`, and static build from a clean checkout on supported Node.js versions. Validate packaged source, CLI, and static site, including the retained fixture licenses and hashes.
+2. Exercise private file loading, all four real cases, synthetic-example recovery, filters, paths, clear, malformed input, and both exports. Check keyboard interaction and a narrow viewport.
 3. Review README promises against the implementation, including input limits, unsupported relationships, output protections, signals, and file names.
-4. Create screenshot assets from the synthetic example. Record a short walkthrough of one real interaction sequence.
-5. Create the public repository only after inspecting tracked files for credentials and private data. Confirm the repository, license, issue templates, and CI state.
-6. Enable GitHub Pages and verify the actual deployed URL and its main flows before adding a live-demo link or badge to the README.
-7. Tag `v0.1.0`, publish the tested archives with checksums, and verify the download links. Do not claim an npm release unless the package has actually been published and tested.
+4. Capture clearly labeled examples and record one short, useful review sequence.
+5. Inspect tracked files for private data and confirm CI before publishing the source update.
+6. Verify the deployed v0.2 case picker, including a real-case hash check and provenance links, before describing those new flows as deployed.
+7. Tag `v0.2.0`, publish tested archives with checksums, and verify download links before replacing the existing stable-download entry. Do not claim an npm release unless it has actually been published and tested.
 8. Publish an honest launch description using the included fixture and model boundaries. Share only where community rules permit; do not send unsolicited messages.
 
-The source repository is public at [qsxustc/lockray](https://github.com/qsxustc/lockray). Initial source commit [`7c157a4`](https://github.com/qsxustc/lockray/commit/7c157a4b91f8fd76efe501953fa9d381fa867b74) passed the 22-test suite and static build on Node.js 22 and 24 in [CI](https://github.com/qsxustc/lockray/actions/runs/38935630469). The [public demo](https://qsxustc.github.io/lockray/) was deployed by the successful [Pages workflow](https://github.com/qsxustc/lockray/actions/runs/38935630435) for that commit and checked in Chromium: the synthetic pair loaded with 25 → 30 installed locations and 17 changes, and before/after chains rendered without console errors. The [v0.1.0 release](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) is published with source ZIP, static-site ZIP, and checksums. Its tagged commit [`69ba814`](https://github.com/qsxustc/lockray/commit/69ba8148417931f939f53a01deb242ecdc12f2d1) passed [tag CI](https://github.com/qsxustc/lockray/actions/runs/38935915793) and the [release workflow](https://github.com/qsxustc/lockray/actions/runs/38935914873). The project has not been published to npm.
+The repository and [public demo](https://qsxustc.github.io/lockray/) are established, and the [v0.1.0 release](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) remains the published download. The current v0.2 source adds the changes described above; its release assets have not yet been published. Verified deployment, CI, and release evidence belongs in [VALIDATION.md](VALIDATION.md). The project has not been published to npm.
 
 ## Validate usefulness before expanding scope
 
