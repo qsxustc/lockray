@@ -2,6 +2,8 @@
 
 **锁文件变了。看清哪些依赖树也跟着变了。**
 
+**[在线体验 — 无需登录](https://qsxustc.github.io/lockray/)** · [GitHub](https://github.com/qsxustc/lockray)
+
 [English](README.md) · [模型与边界](docs/MODEL.md) · [产品与发布计划](docs/PRODUCT.md) · [参与贡献](CONTRIBUTING.md)
 
 Lockray 比较两个 npm `package-lock.json`，把冗长的 JSON diff 变成可探索的审查工作台。按能够到达变动包的直接依赖分组，点击一项变化，查看它在前后两棵锁定依赖树中的最短路径。
@@ -87,6 +89,10 @@ node bin/lockray.js --help
 CLI 读取这两个文件，不会下载 tarball 或调用 npm。覆盖已有输出需要 `--force`，不允许把源输入作为输出目标，包括符号链接和硬链接别名。退出码：`0` 表示成功，`1` 表示启用 `--fail-on-signals` 后检测到审查信号，`2` 表示输入或 I/O 错误。把信号接入 CI 策略前，请先完整检查报告：正常的依赖更新也会产生这些信号。
 
 Lockray 目前没有发布到 npm，请使用上面的仓库命令运行。
+
+源码已公开在 [GitHub](https://github.com/qsxustc/lockray)。初始源码提交 [`7c157a4`](https://github.com/qsxustc/lockray/commit/7c157a4b91f8fd76efe501953fa9d381fa867b74) 已在 [GitHub Actions](https://github.com/qsxustc/lockray/actions/runs/38935630469) 中通过 Node.js 22 与 24 的全部 22 项测试及静态构建。本地浏览器检查与验证边界见[验证记录](docs/VALIDATION.md)。
+
+[在线工作台](https://qsxustc.github.io/lockray/) 已通过 [GitHub Pages](https://github.com/qsxustc/lockray/actions/runs/38935630435) 部署，并在 Chromium 中实测了线上合成示例与前后依赖路径。可下载的发布压缩包尚未发布。
 
 ## 模型覆盖范围
 

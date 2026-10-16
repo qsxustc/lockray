@@ -23,6 +23,7 @@ This is a differentiation hypothesis, not a claim that nobody else implements de
 - Added, removed, version-changed, and metadata-only entries.
 - Direct-dependency reachability groups with visible overlap semantics.
 - One shortest supported root path per snapshot for a selected location.
+- Separate root dependency declaration changes, including ranges and dependency categories.
 - Explicit metadata review signals with evidence and conservative language.
 - Browser workbench and CLI sharing the same deterministic engine.
 - Synthetic examples, Markdown/JSON exports, English/Chinese documentation.
@@ -51,7 +52,7 @@ A concise introduction:
 7. Tag `v0.1.0`, publish the tested archives with checksums, and verify the download links. Do not claim an npm release unless the package has actually been published and tested.
 8. Publish an honest launch description using the included fixture and model boundaries. Share only where community rules permit; do not send unsolicited messages.
 
-The intended repository name is `qsxustc/lockray`. This document does not establish that it is public, deployed, tagged, or released. Replace this paragraph with verified release links after those actions succeed.
+The source repository is public at [qsxustc/lockray](https://github.com/qsxustc/lockray). Initial source commit [`7c157a4`](https://github.com/qsxustc/lockray/commit/7c157a4b91f8fd76efe501953fa9d381fa867b74) passed the 22-test suite and static build on Node.js 22 and 24 in [CI](https://github.com/qsxustc/lockray/actions/runs/38935630469). The [public demo](https://qsxustc.github.io/lockray/) was deployed by the successful [Pages workflow](https://github.com/qsxustc/lockray/actions/runs/38935630435) for that commit and checked in Chromium: the synthetic pair loaded with 25 → 30 installed locations and 17 changes, and before/after chains rendered without console errors. Packaged-release publication is still pending; no release-download claim is made here. The project has not been published to npm.
 
 ## Validate usefulness before expanding scope
 
@@ -63,7 +64,7 @@ An initial target is ten documented reviews from several maintainers, with at le
 
 ## Follow-up hypotheses
 
-After the initial model is reliable, evaluate peer/workspace explanations, more complete graph diagnostics, comparison of direct dependency declarations, and a locally generated GitHub Actions summary. Each addition needs an explicit data model and fixtures.
+After the initial model is reliable, evaluate peer/workspace explanations, more complete graph diagnostics, richer root declaration comparison, and a locally generated GitHub Actions summary. Each addition needs an explicit data model and fixtures.
 
 Support for pnpm or Yarn should be a separate model with ecosystem-specific tests. Do not silently flatten them into npm installation semantics. A browser extension or PR integration should preserve inspectable local processing and request only the permissions it needs.
 

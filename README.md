@@ -2,6 +2,8 @@
 
 **A lockfile changed. See which dependency trees changed with it.**
 
+**[Try the live demo — no login required](https://qsxustc.github.io/lockray/)** · [GitHub](https://github.com/qsxustc/lockray)
+
 [简体中文](README.zh-CN.md) · [Model and boundaries](docs/MODEL.md) · [Product and launch plan](docs/PRODUCT.md) · [Contributing](CONTRIBUTING.md)
 
 Lockray compares two npm `package-lock.json` files and turns a wall of JSON into a review workspace. Group changes by the direct dependencies that can reach them, select a package, and inspect its shortest dependency path before and after the change.
@@ -87,6 +89,10 @@ node bin/lockray.js --help
 The CLI reads the two files and never fetches tarballs or invokes npm. Existing output files require `--force`; source inputs cannot be used as output destinations, including symlink and hardlink aliases. Exit codes are `0` for success, `1` for review signals when `--fail-on-signals` is supplied, and `2` for input or I/O errors. Review the complete output before using signals as a CI policy: legitimate dependency updates can produce them.
 
 Lockray is not currently distributed through npm. Use the repository commands above.
+
+The public source is on [GitHub](https://github.com/qsxustc/lockray). The initial source commit [`7c157a4`](https://github.com/qsxustc/lockray/commit/7c157a4b91f8fd76efe501953fa9d381fa867b74) passed all 22 tests and the static build on Node.js 22 and 24 in [GitHub Actions](https://github.com/qsxustc/lockray/actions/runs/38935630469). See [the validation record](docs/VALIDATION.md) for local browser checks and their limits.
+
+The [live browser demo](https://qsxustc.github.io/lockray/) is deployed through [GitHub Pages](https://github.com/qsxustc/lockray/actions/runs/38935630435). Its deployed synthetic example and before/after paths were checked in Chromium. Packaged release downloads have not yet been published.
 
 ## What the model covers
 

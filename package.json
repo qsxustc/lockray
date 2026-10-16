@@ -4,6 +4,11 @@
   "description": "Explain npm lockfile changes before you merge them. Local, private, and dependency-free.",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qsxustc/lockray.git"
+  },
+  "homepage": "https://qsxustc.github.io/lockray/",
   "bin": {
     "lockray": "bin/lockray.js"
   },

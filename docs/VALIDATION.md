@@ -1,6 +1,6 @@
 # v0.1.0 validation
 
-The initial release was checked on 2026-10-17 using Node.js 24.18.0 on macOS. The CI workflow also runs the suite on Node.js 22 and 24.
+The v0.1.0 source candidate was checked on 2026-10-17 using Node.js 24.18.0 on macOS. The source is public at [qsxustc/lockray](https://github.com/qsxustc/lockray). Initial source commit [`7c157a4`](https://github.com/qsxustc/lockray/commit/7c157a4b91f8fd76efe501953fa9d381fa867b74) passed the 22-test suite and static build on both Node.js 22 and 24 in [GitHub Actions](https://github.com/qsxustc/lockray/actions/runs/38935630469).
 
 ## Automated checks
 
@@ -28,8 +28,12 @@ The local app was exercised in the desktop app's Chromium browser:
 
 These checks cover the exercised Chromium environment; they are not a claim of exhaustive browser compatibility or a security audit. Workspace/link expansion, range satisfaction, peer placement validation, and artifact contents remain outside the documented model.
 
+## Public deployment
+
+The initial source commit `7c157a4` was deployed by the successful [GitHub Pages workflow](https://github.com/qsxustc/lockray/actions/runs/38935630435). The actual [public workbench](https://qsxustc.github.io/lockray/) was opened in Chromium and checked independently of the workflow status: the synthetic example automatically loaded 25 → 30 installed locations and 17 changes, before/after dependency chains rendered, and no console errors were reported. This validates the exercised deployed flow; it is not an exhaustive replay of all local checks against the hosted site.
+
 ## Release tooling
 
 The development server was checked for GET/HEAD behavior, public-resource selection, malformed paths, traversal, external symlink exclusion, and non-read methods. Packaging was checked in a temporary committed repository: both ZIPs passed `unzip` validation, dirty content was excluded, overwrite protection worked, and repeated packaging of the same HEAD produced the same checksums.
 
-Published CI runs, Pages deployment, and release asset links belong in the README only after those remote results have been verified.
+The CI and Pages results above are verified. Packaged-release publication is still pending verification; release-download links will be added only after the remote assets and download targets are confirmed. The project has not been published to npm.
