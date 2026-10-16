@@ -36,4 +36,12 @@ The initial source commit `7c157a4` was deployed by the successful [GitHub Pages
 
 The development server was checked for GET/HEAD behavior, public-resource selection, malformed paths, traversal, external symlink exclusion, and non-read methods. Packaging was checked in a temporary committed repository: both ZIPs passed `unzip` validation, dirty content was excluded, overwrite protection worked, and repeated packaging of the same HEAD produced the same checksums.
 
-The CI and Pages results above are verified. Packaged-release publication is still pending verification; release-download links will be added only after the remote assets and download targets are confirmed. The project has not been published to npm.
+The [v0.1.0 release](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) is published. The successful [release workflow](https://github.com/qsxustc/lockray/actions/runs/38935914873) built from tagged commit [`69ba8148417931f939f53a01deb242ecdc12f2d1`](https://github.com/qsxustc/lockray/commit/69ba8148417931f939f53a01deb242ecdc12f2d1), which also passed [tag CI](https://github.com/qsxustc/lockray/actions/runs/38935915793). All three release assets are present:
+
+| Asset | Published SHA-256 |
+| --- | --- |
+| [lockray-0.1.0-source.zip](https://github.com/qsxustc/lockray/releases/download/v0.1.0/lockray-0.1.0-source.zip) | `8f1d124ea9990c9defea412ac3d244a1d2248fcc6d33647985b3d27ecb277406` |
+| [lockray-0.1.0-site.zip](https://github.com/qsxustc/lockray/releases/download/v0.1.0/lockray-0.1.0-site.zip) | `41eb3317519bc778129dcd17927cc116bf4afdfe8ce6dd383336310aef90b307` |
+| [SHA256SUMS.txt](https://github.com/qsxustc/lockray/releases/download/v0.1.0/SHA256SUMS.txt) | Contains the two archive digests above |
+
+The CI, Pages, and GitHub Release publication results above are verified. The project has not been published to npm.

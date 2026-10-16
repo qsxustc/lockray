@@ -2,7 +2,7 @@
 
 **A lockfile changed. See which dependency trees changed with it.**
 
-**[Try the live demo — no login required](https://qsxustc.github.io/lockray/)** · [GitHub](https://github.com/qsxustc/lockray)
+**[Try the live demo — no login required](https://qsxustc.github.io/lockray/)** · **[Download v0.1.0](https://github.com/qsxustc/lockray/releases/tag/v0.1.0)** · [GitHub](https://github.com/qsxustc/lockray)
 
 [简体中文](README.zh-CN.md) · [Model and boundaries](docs/MODEL.md) · [Product and launch plan](docs/PRODUCT.md) · [Contributing](CONTRIBUTING.md)
 
@@ -32,6 +32,19 @@ After:  project → build-kit@3.0.0 → parser@2.0.0
 - **Keep inputs local.** Analysis uses no upload endpoint, analytics, remote fonts, or registry service. Browser inputs live in tab memory.
 
 This is a **locked-tree reachability tool**. A dependency path explains how entries are connected in the supplied snapshots. It does not prove why npm's resolver selected a version, that code uses a dependency, or that a change caused a regression.
+
+## Download v0.1.0
+
+The [published release](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) includes a [source ZIP](https://github.com/qsxustc/lockray/releases/download/v0.1.0/lockray-0.1.0-source.zip) for local development and the CLI, a [static-site ZIP](https://github.com/qsxustc/lockray/releases/download/v0.1.0/lockray-0.1.0-site.zip) for HTTP hosting, and [SHA256SUMS.txt](https://github.com/qsxustc/lockray/releases/download/v0.1.0/SHA256SUMS.txt). Download both ZIPs and the checksum file into the same directory, then verify before extracting:
+
+```sh
+# macOS
+shasum -a 256 -c SHA256SUMS.txt
+# Linux
+sha256sum -c SHA256SUMS.txt
+```
+
+Both archives should report `OK`. Extract the source ZIP and open `lockray-0.1.0/` to run the commands below. The site ZIP contains the prebuilt app and must be served over HTTP or HTTPS; opening it directly with `file://` is not supported.
 
 ## Run locally
 
@@ -92,7 +105,7 @@ Lockray is not currently distributed through npm. Use the repository commands ab
 
 The public source is on [GitHub](https://github.com/qsxustc/lockray). The initial source commit [`7c157a4`](https://github.com/qsxustc/lockray/commit/7c157a4b91f8fd76efe501953fa9d381fa867b74) passed all 22 tests and the static build on Node.js 22 and 24 in [GitHub Actions](https://github.com/qsxustc/lockray/actions/runs/38935630469). See [the validation record](docs/VALIDATION.md) for local browser checks and their limits.
 
-The [live browser demo](https://qsxustc.github.io/lockray/) is deployed through [GitHub Pages](https://github.com/qsxustc/lockray/actions/runs/38935630435). Its deployed synthetic example and before/after paths were checked in Chromium. Packaged release downloads have not yet been published.
+The [live browser demo](https://qsxustc.github.io/lockray/) is deployed through [GitHub Pages](https://github.com/qsxustc/lockray/actions/runs/38935630435). Its deployed synthetic example and before/after paths were checked in Chromium. The [v0.1.0 release](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) was built from tagged commit [`69ba814`](https://github.com/qsxustc/lockray/commit/69ba8148417931f939f53a01deb242ecdc12f2d1) by the successful [release workflow](https://github.com/qsxustc/lockray/actions/runs/38935914873); that tag also passed [CI](https://github.com/qsxustc/lockray/actions/runs/38935915793). Release assets and checksums are recorded in [validation](docs/VALIDATION.md).
 
 ## What the model covers
 

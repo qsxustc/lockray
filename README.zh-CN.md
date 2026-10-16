@@ -2,7 +2,7 @@
 
 **锁文件变了。看清哪些依赖树也跟着变了。**
 
-**[在线体验 — 无需登录](https://qsxustc.github.io/lockray/)** · [GitHub](https://github.com/qsxustc/lockray)
+**[在线体验 — 无需登录](https://qsxustc.github.io/lockray/)** · **[下载 v0.1.0](https://github.com/qsxustc/lockray/releases/tag/v0.1.0)** · [GitHub](https://github.com/qsxustc/lockray)
 
 [English](README.md) · [模型与边界](docs/MODEL.md) · [产品与发布计划](docs/PRODUCT.md) · [参与贡献](CONTRIBUTING.md)
 
@@ -32,6 +32,19 @@ Lockray 比较两个 npm `package-lock.json`，把冗长的 JSON diff 变成可�
 - **输入留在本地。** 分析没有上传接口、遥测、远程字体或 registry 查询；浏览器输入仅保存在当前标签页内存中。
 
 这是一个**锁定依赖树可达性工具**。依赖路径说明两份快照中条目的连接关系，不能证明 npm 求解器为什么选择某个版本、业务代码是否使用了这个包，或某项改动是否导致故障。
+
+## 下载 v0.1.0
+
+[正式发布页](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) 提供用于本地开发和 CLI 的[源码 ZIP](https://github.com/qsxustc/lockray/releases/download/v0.1.0/lockray-0.1.0-source.zip)、用于 HTTP 托管的[静态站点 ZIP](https://github.com/qsxustc/lockray/releases/download/v0.1.0/lockray-0.1.0-site.zip)，以及 [SHA256SUMS.txt](https://github.com/qsxustc/lockray/releases/download/v0.1.0/SHA256SUMS.txt)。把两个 ZIP 和校验文件下载到同一目录，先验证再解压：
+
+```sh
+# macOS
+shasum -a 256 -c SHA256SUMS.txt
+# Linux
+sha256sum -c SHA256SUMS.txt
+```
+
+两个压缩包都应显示 `OK`。解压源码 ZIP 后，进入 `lockray-0.1.0/` 运行下面的命令。静态站点 ZIP 已包含构建产物，需要通过 HTTP 或 HTTPS 提供，不支持 `file://` 直接打开。
 
 ## 本地运行
 
@@ -92,7 +105,7 @@ Lockray 目前没有发布到 npm，请使用上面的仓库命令运行。
 
 源码已公开在 [GitHub](https://github.com/qsxustc/lockray)。初始源码提交 [`7c157a4`](https://github.com/qsxustc/lockray/commit/7c157a4b91f8fd76efe501953fa9d381fa867b74) 已在 [GitHub Actions](https://github.com/qsxustc/lockray/actions/runs/38935630469) 中通过 Node.js 22 与 24 的全部 22 项测试及静态构建。本地浏览器检查与验证边界见[验证记录](docs/VALIDATION.md)。
 
-[在线工作台](https://qsxustc.github.io/lockray/) 已通过 [GitHub Pages](https://github.com/qsxustc/lockray/actions/runs/38935630435) 部署，并在 Chromium 中实测了线上合成示例与前后依赖路径。可下载的发布压缩包尚未发布。
+[在线工作台](https://qsxustc.github.io/lockray/) 已通过 [GitHub Pages](https://github.com/qsxustc/lockray/actions/runs/38935630435) 部署，并在 Chromium 中实测了线上合成示例与前后依赖路径。[v0.1.0 发布包](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) 已由成功的 [Release workflow](https://github.com/qsxustc/lockray/actions/runs/38935914873) 从标签提交 [`69ba814`](https://github.com/qsxustc/lockray/commit/69ba8148417931f939f53a01deb242ecdc12f2d1) 构建，该标签也已通过 [CI](https://github.com/qsxustc/lockray/actions/runs/38935915793)。下载资产与校验值见[验证记录](docs/VALIDATION.md)。
 
 ## 模型覆盖范围
 
