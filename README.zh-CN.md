@@ -2,7 +2,7 @@
 
 **锁文件变了。看清哪些依赖树也跟着变了。**
 
-**[在线体验 — 无需登录](https://qsxustc.github.io/lockray/)** · **[真实升级案例](docs/REAL-CASES.md)** · [下载 v0.1.0](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) · [GitHub](https://github.com/qsxustc/lockray)
+**[在线体验 — 无需登录](https://qsxustc.github.io/lockray/)** · **[真实升级案例](docs/REAL-CASES.md)** · [下载 v0.2.0](https://github.com/qsxustc/lockray/releases/tag/v0.2.0) · [GitHub](https://github.com/qsxustc/lockray)
 
 [English](README.md) · [模型与边界](docs/MODEL.md) · [产品与发布计划](docs/PRODUCT.md) · [参与贡献](CONTRIBUTING.md)
 
@@ -10,7 +10,7 @@ Lockray 比较两个 npm `package-lock.json`，把冗长的 JSON diff 变成可�
 
 它可以在浏览器或终端本地运行。**分析锁文件不需要账户、API Key、查询 registry 或安装文件中描述的依赖。** Lockray 不会执行输入包中的代码。
 
-**v0.2.0 源码新增：**一键加载 Axios、Marked、PDF.js 的四次真实上游依赖升级，附固定文件哈希与可复现的离线核对。详见[更新说明](docs/releases/v0.2.0.md)。上面的正式下载仍为 v0.1.0，v0.2.0 发布包尚未发布。
+**v0.2.0 新增：**一键加载 Axios、Marked、PDF.js 的四次真实上游依赖升级，附固定文件哈希与可复现的离线核对。详见[更新说明](docs/releases/v0.2.0.md)。
 
 ![Lockray 审查真实 Axios 依赖升级中的 187 处变化](docs/images/real-upgrade.png)
 
@@ -50,9 +50,9 @@ Lockray 比较两个 npm `package-lock.json`，把冗长的 JSON diff 变成可�
 
 Marked 案例发现了一个提示噪声：九个随 npm 打包的包原本就没有独立 integrity。v0.2 将此情况合并为一条覆盖说明，不再产生九个缺少完整性信号；原先存在的校验值如果消失，仍会提示。这不代表对应包或父制品已通过安全验证。
 
-## 下载 v0.1.0
+## 下载 v0.2.0
 
-[正式发布页](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) 提供用于本地开发和 CLI 的[源码 ZIP](https://github.com/qsxustc/lockray/releases/download/v0.1.0/lockray-0.1.0-source.zip)、用于 HTTP 托管的[静态站点 ZIP](https://github.com/qsxustc/lockray/releases/download/v0.1.0/lockray-0.1.0-site.zip)，以及 [SHA256SUMS.txt](https://github.com/qsxustc/lockray/releases/download/v0.1.0/SHA256SUMS.txt)。把两个 ZIP 和校验文件下载到同一目录，先验证再解压：
+[正式发布页](https://github.com/qsxustc/lockray/releases/tag/v0.2.0) 提供用于本地开发和 CLI 的[源码 ZIP](https://github.com/qsxustc/lockray/releases/download/v0.2.0/lockray-0.2.0-source.zip)、用于 HTTP 托管的[静态站点 ZIP](https://github.com/qsxustc/lockray/releases/download/v0.2.0/lockray-0.2.0-site.zip)，以及 [SHA256SUMS.txt](https://github.com/qsxustc/lockray/releases/download/v0.2.0/SHA256SUMS.txt)。把两个 ZIP 和校验文件下载到同一目录，先验证再解压：
 
 ```sh
 # macOS
@@ -61,7 +61,7 @@ shasum -a 256 -c SHA256SUMS.txt
 sha256sum -c SHA256SUMS.txt
 ```
 
-两个压缩包都应显示 `OK`。解压源码 ZIP 后，进入 `lockray-0.1.0/` 运行下面的命令。静态站点 ZIP 已包含构建产物，需要通过 HTTP 或 HTTPS 提供，不支持 `file://` 直接打开。
+两个压缩包都应显示 `OK`。解压源码 ZIP 后，进入 `lockray-0.2.0/` 运行下面的命令。静态站点 ZIP 已包含构建产物，需要通过 HTTP 或 HTTPS 提供，不支持 `file://` 直接打开。
 
 ## 本地运行
 
@@ -71,7 +71,7 @@ sha256sum -c SHA256SUMS.txt
 npm start
 ```
 
-打开终端打印的本地回环地址。不需要先执行 `npm install`。你可以加载合成示例、选择真实历史案例，或分别加载之前、之后的 `package-lock.json`。真实案例选择器包含在 v0.2 源码中；旧版 v0.1 下载包提供合成示例。
+打开终端打印的本地回环地址。不需要先执行 `npm install`。你可以加载合成示例、选择真实历史案例，或分别加载之前、之后的 `package-lock.json`。
 
 1. 比较两份快照，查看整体变化数量。
 2. 选择一个直接依赖，聚焦能够从它到达的变化。
@@ -127,7 +127,7 @@ Lockray 目前没有发布到 npm，请使用上面的仓库命令运行。
 
 源码已公开在 [GitHub](https://github.com/qsxustc/lockray)。初始版本已在 [GitHub Actions](https://github.com/qsxustc/lockray/actions/runs/38935630469) 中通过 Node.js 22 与 24 的核心/CLI 测试及静态构建。当前验证证据与边界见[验证记录](docs/VALIDATION.md)。
 
-[在线工作台](https://qsxustc.github.io/lockray/) 已通过 [GitHub Pages](https://github.com/qsxustc/lockray/actions/runs/38935630435) 部署，并在 Chromium 中实测了线上合成示例与前后依赖路径。[v0.1.0 发布包](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) 已由成功的 [Release workflow](https://github.com/qsxustc/lockray/actions/runs/38935914873) 从标签提交 [`69ba814`](https://github.com/qsxustc/lockray/commit/69ba8148417931f939f53a01deb242ecdc12f2d1) 构建，该标签也已通过 [CI](https://github.com/qsxustc/lockray/actions/runs/38935915793)。下载资产与校验值见[验证记录](docs/VALIDATION.md)。
+[在线工作台](https://qsxustc.github.io/lockray/) 通过 GitHub Pages 部署。v0.2.0 源码已通过 48 项本地测试，并在 Chromium 中操作验证了真实案例。源码和静态站点压缩包从已提交的发布标签构建。当前远程 CI、部署和发布结果见[验证记录](docs/VALIDATION.md)。
 
 ## 模型覆盖范围
 

@@ -2,7 +2,7 @@
 
 **A lockfile changed. See which dependency trees changed with it.**
 
-**[Try the live demo — no login required](https://qsxustc.github.io/lockray/)** · **[Real upgrade examples](docs/REAL-CASES.md)** · [Download v0.1.0](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) · [GitHub](https://github.com/qsxustc/lockray)
+**[Try the live demo — no login required](https://qsxustc.github.io/lockray/)** · **[Real upgrade examples](docs/REAL-CASES.md)** · [Download v0.2.0](https://github.com/qsxustc/lockray/releases/tag/v0.2.0) · [GitHub](https://github.com/qsxustc/lockray)
 
 [简体中文](README.zh-CN.md) · [Model and boundaries](docs/MODEL.md) · [Product and launch plan](docs/PRODUCT.md) · [Contributing](CONTRIBUTING.md)
 
@@ -10,7 +10,7 @@ Lockray compares two npm `package-lock.json` files and turns a wall of JSON into
 
 It runs locally in your browser or terminal. **No account, API key, registry lookup, or package installation is needed to analyze a lockfile.** Lockray does not execute the packages described by your input.
 
-**New in the v0.2.0 source:** load four real upstream dependency updates from Axios, Marked, and PDF.js, with pinned file hashes and reproducible offline checks. See [what changed](docs/releases/v0.2.0.md). The published download above is v0.1.0; v0.2.0 release assets are not published yet.
+**New in v0.2.0:** load four real upstream dependency updates from Axios, Marked, and PDF.js, with pinned file hashes and reproducible offline checks. See [what changed](docs/releases/v0.2.0.md).
 
 ![Lockray reviewing a real Axios dependency refresh with 187 changes](docs/images/real-upgrade.png)
 
@@ -50,9 +50,9 @@ These are unchanged snapshots from actual upstream commits and their first paren
 
 The Marked case exposed a noisy review signal: nine bundled packages already lacked individual integrity values. v0.2 reports that limitation once as a coverage note instead of nine missing-integrity signals. A previously recorded checksum that disappears still generates a signal. This does not certify the packages or their parent artifact as safe.
 
-## Download v0.1.0
+## Download v0.2.0
 
-The [published release](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) includes a [source ZIP](https://github.com/qsxustc/lockray/releases/download/v0.1.0/lockray-0.1.0-source.zip) for local development and the CLI, a [static-site ZIP](https://github.com/qsxustc/lockray/releases/download/v0.1.0/lockray-0.1.0-site.zip) for HTTP hosting, and [SHA256SUMS.txt](https://github.com/qsxustc/lockray/releases/download/v0.1.0/SHA256SUMS.txt). Download both ZIPs and the checksum file into the same directory, then verify before extracting:
+The [versioned release page](https://github.com/qsxustc/lockray/releases/tag/v0.2.0) includes a [source ZIP](https://github.com/qsxustc/lockray/releases/download/v0.2.0/lockray-0.2.0-source.zip) for local development and the CLI, a [static-site ZIP](https://github.com/qsxustc/lockray/releases/download/v0.2.0/lockray-0.2.0-site.zip) for HTTP hosting, and [SHA256SUMS.txt](https://github.com/qsxustc/lockray/releases/download/v0.2.0/SHA256SUMS.txt). Download both ZIPs and the checksum file into the same directory, then verify before extracting:
 
 ```sh
 # macOS
@@ -61,7 +61,7 @@ shasum -a 256 -c SHA256SUMS.txt
 sha256sum -c SHA256SUMS.txt
 ```
 
-Both archives should report `OK`. Extract the source ZIP and open `lockray-0.1.0/` to run the commands below. The site ZIP contains the prebuilt app and must be served over HTTP or HTTPS; opening it directly with `file://` is not supported.
+Both archives should report `OK`. Extract the source ZIP and open `lockray-0.2.0/` to run the commands below. The site ZIP contains the prebuilt app and must be served over HTTP or HTTPS; opening it directly with `file://` is not supported.
 
 ## Run locally
 
@@ -71,7 +71,7 @@ Requires **Node.js 22 or newer**. From this repository's directory:
 npm start
 ```
 
-Open the loopback URL printed in your terminal. No `npm install` step is required. Load the synthetic example, choose a real historical case, or load a before and after `package-lock.json`. The real-case picker is available in the v0.2 source; the older v0.1 archive contains the synthetic example.
+Open the loopback URL printed in your terminal. No `npm install` step is required. Load the synthetic example, choose a real historical case, or load a before and after `package-lock.json`.
 
 1. Compare the two snapshots and inspect the overall change counts.
 2. Choose a direct dependency to narrow the view to changes reachable from it.
@@ -127,7 +127,7 @@ Lockray is not currently distributed through npm. Use the repository commands ab
 
 The public source is on [GitHub](https://github.com/qsxustc/lockray). The initial release passed the core/CLI suite and static build on Node.js 22 and 24 in [GitHub Actions](https://github.com/qsxustc/lockray/actions/runs/38935630469). Current validation evidence and its limits are recorded in [the validation record](docs/VALIDATION.md).
 
-The [live browser demo](https://qsxustc.github.io/lockray/) is deployed through [GitHub Pages](https://github.com/qsxustc/lockray/actions/runs/38935630435). Its deployed synthetic example and before/after paths were checked in Chromium. The [v0.1.0 release](https://github.com/qsxustc/lockray/releases/tag/v0.1.0) was built from tagged commit [`69ba814`](https://github.com/qsxustc/lockray/commit/69ba8148417931f939f53a01deb242ecdc12f2d1) by the successful [release workflow](https://github.com/qsxustc/lockray/actions/runs/38935914873); that tag also passed [CI](https://github.com/qsxustc/lockray/actions/runs/38935915793). Release assets and checksums are recorded in [validation](docs/VALIDATION.md).
+The [live browser app](https://qsxustc.github.io/lockray/) is deployed with GitHub Pages. The v0.2.0 source passed 48 local tests and the real examples were exercised in Chromium. Versioned source/site archives are built from the committed release tag. Current remote CI, deployment, and release evidence is maintained in [the validation record](docs/VALIDATION.md).
 
 ## What the model covers
 
