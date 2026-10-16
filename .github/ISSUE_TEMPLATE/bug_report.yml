@@ -1,0 +1,50 @@
+name: Bug report
+description: Report an incorrect comparison, path, export, or interface behavior.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please use the smallest synthetic reproduction. Do not attach private lockfiles, credentials, internal registry URLs, or identifying workspace paths. For a security defect in Lockray, read SECURITY.md first.
+  - type: input
+    id: version
+    attributes:
+      label: Lockray version or commit
+      placeholder: v0.1.0 or commit hash
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser and version, or Node.js version; operating system if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Include the built-in scenario or smallest synthetic before/after fixture pair.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: For path issues, include the expected installed location and dependency path. Include npm's version and a disposable reproduction if available.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include a text error or synthetic-data screenshot when useful.
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed credentials, private names, internal URLs, and identifying paths from this report.
+          required: true

@@ -1,0 +1,34 @@
+name: Feature request
+description: Describe a dependency review task Lockray could make easier.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start with the review task and an example. Do not include private lockfiles or credentials. The current focus is local npm v2/v3 comparison and explainable locked-tree reachability.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to review?
+      description: Describe the decision you need to make and where the current workflow falls short.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: A concrete example
+      description: A small synthetic input or current workflow helps us understand the request.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired result
+      description: Explain what you would see or export and how it helps with the decision.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or workarounds
+      description: What do you use today? Links to relevant tools or specifications are welcome.

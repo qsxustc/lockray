@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Turn a noisy npm lockfile diff into an explorable dependency change map. Compare locally, trace dependency chains, and export a PR review."
+    />
+    <meta name="theme-color" content="#f7f7f2" />
+    <title>Lockray — See the chain reaction.</title>
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Lockray home"
+        ><img src="./icon.svg" width="33" height="33" alt="" /><span
+          >lockray<span class="brand-dot">.</span></span
+        ></a
+      >
+      <span class="header-caption" data-i18n="headerCaption"
+        >A clearer view of your dependencies</span
+      >
+      <nav aria-label="Main navigation">
+        <span class="local-badge"
+          ><span></span><span data-i18n="local">Local processing</span></span
+        ><button class="text-button language" id="language" type="button">
+          中文</button
+        ><a
+          class="github-link"
+          href="https://github.com/qsxustc/lockray"
+          target="_blank"
+          rel="noreferrer"
+          >GitHub <span aria-hidden="true">↗</span></a
+        >
+      </nav>
+    </header>
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">
+            <span class="tiny-mark">⌁</span>
+            <span data-i18n="eyebrow">LESS DIFF. MORE UNDERSTANDING.</span>
+          </p>
+          <h1 id="page-title" data-i18n="title">See the chain reaction.</h1>
+          <p class="intro-copy" data-i18n="intro">
+            Your lockfile changed. Follow every dependency back to the packages
+            you actually chose.
+          </p>
+        </div>
+        <div class="intro-note">
+          <span class="note-number">{ }</span>
+          <p data-i18n="introNote">
+            Two lockfiles.<br />One explorable change map.
+          </p>
+        </div>
+      </section>
+
+      <section class="import-section" aria-label="Compare lockfiles">
+        <div class="file-card" id="before-drop">
+          <div class="file-index">01</div>
+          <div class="file-info">
+            <label class="file-label" for="before-file" data-i18n="before"
+              >BEFORE</label
+            ><strong id="before-name">package-lock.json</strong
+            ><span id="before-hint" data-i18n="dropBefore"
+              >Drop your base lockfile, or choose a file</span
+            >
+          </div>
+          <button
+            class="file-button"
+            data-file="before"
+            type="button"
+            data-i18n="choose"
+          >
+            Choose file</button
+          ><input
+            type="file"
+            id="before-file"
+            accept=".json,application/json"
+            class="visually-hidden"
+          />
+        </div>
+        <div class="compare-arrow" aria-hidden="true">→</div>
+        <div class="file-card" id="after-drop">
+          <div class="file-index">02</div>
+          <div class="file-info">
+            <label class="file-label" for="after-file" data-i18n="after"
+              >AFTER</label
+            ><strong id="after-name">package-lock.json</strong
+            ><span id="after-hint" data-i18n="dropAfter"
+              >Drop your updated lockfile, or choose a file</span
+            >
+          </div>
+          <button
+            class="file-button"
+            data-file="after"
+            type="button"
+            data-i18n="choose"
+          >
+            Choose file</button
+          ><input
+            type="file"
+            id="after-file"
+            accept=".json,application/json"
+            class="visually-hidden"
+          />
+        </div>
+      </section>
+      <div class="import-footer">
+        <p>
+          <span aria-hidden="true">◇</span>
+          <span data-i18n="fileSupport"
+            >npm lockfile v2 & v3 · 10 MiB per file · no uploads</span
+          >
+        </p>
+        <div>
+          <button
+            id="paste"
+            class="text-button"
+            type="button"
+            data-i18n="paste"
+          >
+            Paste JSON</button
+          ><span class="separator">/</span
+          ><button
+            id="demo"
+            class="text-button"
+            type="button"
+            data-i18n="tryDemo"
+          >
+            Load example</button
+          ><button
+            id="clear"
+            class="text-button muted"
+            type="button"
+            data-i18n="clear"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+      <p
+        class="notice hidden"
+        id="message"
+        role="status"
+        aria-live="polite"
+      ></p>
+
+      <section
+        id="workspace"
+        class="workspace"
+        aria-label="Dependency review"
+        aria-busy="true"
+      >
+        <div class="workspace-heading">
+          <div class="workspace-title">
+            <h2 data-i18n="changeMap">Change map</h2>
+            <span class="demo-badge" id="dataset-label" data-i18n="synthetic"
+              >SYNTHETIC EXAMPLE</span
+            ><span class="project-name" id="project-name"></span>
+          </div>
+          <div class="workspace-actions">
+            <div class="view-switch" aria-label="View">
+              <button
+                id="review-view"
+                type="button"
+                class="active"
+                aria-pressed="true"
+                data-i18n="explore"
+              >
+                Explore</button
+              ><button
+                id="report-view"
+                type="button"
+                aria-pressed="false"
+                data-i18n="report"
+              >
+                Report
+              </button>
+            </div>
+            <button class="primary-button" id="export" type="button" disabled>
+              <span aria-hidden="true">↓</span>
+              <span data-i18n="export">Export review</span>
+            </button>
+          </div>
+        </div>
+        <div id="empty" class="empty-state hidden">
+          <span class="empty-mark" aria-hidden="true">⌁</span>
+          <h3 data-i18n="emptyTitle">Every change has a path.</h3>
+          <p data-i18n="emptyCopy">
+            Choose a before and after lockfile to start exploring, or load the
+            example.
+          </p>
+          <button
+            class="primary-button"
+            id="empty-demo"
+            data-i18n="tryDemo"
+            type="button"
+          >
+            Load example
+          </button>
+        </div>
+        <div id="result">
+          <div class="summary-grid" id="summary"></div>
+          <div class="explorer" id="explorer">
+            <aside class="roots-panel">
+              <div class="panel-label">
+                <span data-i18n="rootHeading">ROOT DEPENDENCIES</span
+                ><span
+                  title="A shared dependency can appear under several roots."
+                  aria-hidden="true"
+                  >↘</span
+                >
+              </div>
+              <p class="panel-description" data-i18n="rootCopy">
+                Where the changes are reachable.
+              </p>
+              <div id="roots"></div>
+              <p class="root-footnote" data-i18n="rootFootnote">
+                Shared dependencies may appear under multiple roots. Counts are
+                not additive.
+              </p>
+            </aside>
+            <section class="changes-panel" aria-label="Changed packages">
+              <div class="table-toolbar">
+                <div class="search-wrap">
+                  <span aria-hidden="true">⌕</span
+                  ><input
+                    id="search"
+                    type="search"
+                    data-i18n-placeholder="search"
+                    placeholder="Find a package or path…"
+                    aria-label="Search packages"
+                    autocomplete="off"
+                    spellcheck="false"
+                  /><kbd>/</kbd>
+                </div>
+                <label class="signal-toggle"
+                  ><input id="signals-only" type="checkbox" /><span
+                    class="signal-dot"
+                  ></span
+                  ><span data-i18n="signalsOnly">Signals only</span></label
+                >
+              </div>
+              <div
+                class="filter-row"
+                id="filters"
+                aria-label="Change type filters"
+              ></div>
+              <div class="table-head">
+                <span data-i18n="package">PACKAGE / INSTALLED LOCATION</span
+                ><span data-i18n="versionChange">VERSION</span>
+              </div>
+              <div id="changes" class="change-list"></div>
+              <div class="list-footer">
+                <span id="visible-count"></span
+                ><label class="sort-label"
+                  ><span data-i18n="sort">Sort</span
+                  ><select id="sort" aria-label="Sort changes">
+                    <option value="signal" data-i18n="signalFirst">
+                      Signals first
+                    </option>
+                    <option value="name" data-i18n="nameSort">Name A–Z</option>
+                  </select></label
+                >
+              </div>
+              <button
+                type="button"
+                id="show-more"
+                class="load-more hidden"
+                data-i18n="showMore"
+              >
+                Show 100 more
+              </button>
+            </section>
+            <aside
+              class="detail-panel"
+              id="detail"
+              aria-label="Selected package details"
+            ></aside>
+          </div>
+          <section
+            id="report-panel"
+            class="report-panel hidden"
+            aria-label="Review report"
+          >
+            <div class="report-intro">
+              <div>
+                <h3 data-i18n="reportTitle">A review you can take with you.</h3>
+                <p data-i18n="exportNote">
+                  Exports contain package names, paths and source metadata.
+                  Review them before sharing.
+                </p>
+              </div>
+              <div>
+                <button
+                  class="file-button"
+                  id="copy-report"
+                  type="button"
+                  data-i18n="copy"
+                >
+                  Copy Markdown</button
+                ><button
+                  class="primary-button"
+                  id="json-export"
+                  type="button"
+                  data-i18n="jsonExport"
+                >
+                  Download JSON
+                </button>
+              </div>
+            </div>
+            <pre id="report-preview" tabindex="0"></pre>
+          </section>
+          <details class="model-notes">
+            <summary>
+              <span data-i18n="modelHeading"
+                >About this map & analysis notes</span
+              ><span id="warning-count"></span>
+            </summary>
+            <p data-i18n="modelCopy">
+              Paths show reachability in the two locked trees, not why npm
+              selected a version. Each change is matched by installed location.
+              Moved packages appear as removed and added. Signals are prompts
+              for review, not vulnerability findings. Linked workspaces are
+              outside the path model.
+            </p>
+            <ul id="warnings"></ul>
+            <a
+              href="https://docs.npmjs.com/cli/v11/configuring-npm/package-lock-json/"
+              target="_blank"
+              rel="noreferrer"
+              data-i18n="npmDocs"
+              >npm lockfile format ↗</a
+            >
+          </details>
+        </div>
+      </section>
+      <section class="how-it-works" aria-label="How Lockray works">
+        <div>
+          <span>01 /</span>
+          <h3 data-i18n="howOne">Start with the change.</h3>
+          <p data-i18n="howOneCopy">
+            Added, removed, version and metadata changes. Every installed
+            location stays distinct.
+          </p>
+        </div>
+        <div>
+          <span>02 /</span>
+          <h3 data-i18n="howTwo">Follow the dependency.</h3>
+          <p data-i18n="howTwoCopy">
+            Select a root to narrow the map. Compare a package’s shortest path
+            before and after.
+          </p>
+        </div>
+        <div>
+          <span>03 /</span>
+          <h3 data-i18n="howThree">Bring evidence to your PR.</h3>
+          <p data-i18n="howThreeCopy">
+            Export a readable Markdown review. No account, API key or registry
+            access needed.
+          </p>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <span class="footer-brand">lockray.</span
+      ><span data-i18n="footer"
+        >Open source. On your device. In your corner.</span
+      ><span>v0.1.0 <span class="footer-divider">·</span> MIT</span>
+    </footer>
+
+    <dialog id="paste-dialog">
+      <form id="paste-form">
+        <div class="dialog-heading">
+          <h2 data-i18n="pasteTitle">Paste your lockfiles</h2>
+          <button
+            id="close-dialog"
+            class="text-button"
+            type="button"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+        <p data-i18n="pasteCopy">
+          Paste complete npm v2 or v3 lockfiles. Both fields are required.
+        </p>
+        <div class="paste-grid">
+          <label
+            ><span data-i18n="before">BEFORE</span
+            ><textarea
+              id="paste-before"
+              required
+              spellcheck="false"
+              placeholder='{"lockfileVersion": 3, "packages": …}'
+            ></textarea></label
+          ><label
+            ><span data-i18n="after">AFTER</span
+            ><textarea
+              id="paste-after"
+              required
+              spellcheck="false"
+              placeholder='{"lockfileVersion": 3, "packages": …}'
+            ></textarea>
+          </label>
+        </div>
+        <div class="dialog-footer">
+          <span data-i18n="pastePrivacy"
+            >Processed in this tab. Nothing is uploaded.</span
+          ><button class="primary-button" type="submit" data-i18n="compare">
+            Compare lockfiles →
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
